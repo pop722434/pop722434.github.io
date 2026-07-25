@@ -132,6 +132,7 @@
       background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
       color: #d1d5db; border-radius: 8px; padding: 6px 10px;
       cursor: pointer; font-size: 12px; transition: all 0.2s;
+      font-variant-emoji: text;
     }
     .music-player .controls button:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); }
     .music-player input[type="range"] {
@@ -197,10 +198,6 @@
       color: #fff !important;
     }
     .repeat-btn.one { color: #fff !important; }
-    .repeat-btn.one::after {
-      content: '1'; position: absolute; font-size: 7px; font-weight: 700;
-      top: 1px; right: 3px; color: #fff;
-    }
     .playlist-panel {
       position: fixed; top: 170px; right: 20px; z-index: 99;
       background: rgba(10,12,18,0.85); border: 1px solid rgba(255,255,255,0.06);
