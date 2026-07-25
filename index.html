@@ -217,6 +217,15 @@
     }
     .playlist-header .ph-title { font-size: 11px; color: #8b949e; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; }
     .playlist-header .ph-count { font-size: 10px; color: #484f58; font-weight: 300; }
+    .playlist-tabs { display: flex; gap: 4px; }
+    .playlist-tab {
+      font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 6px; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.08); color: #6b7280;
+      background: transparent; transition: all 0.2s;
+    }
+    .playlist-tab:hover { border-color: rgba(255,255,255,0.15); color: #9ca3af; }
+    .playlist-tab.active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #e6edf3; }
     .playlist-item {
       display: flex; align-items: center; gap: 8px;
       padding: 8px 10px; border-radius: 8px;
@@ -341,11 +350,12 @@
     var shuffleMode = false;
     var repeatMode = 'all'; // 'all' | 'one' | 'none'
     var playlistData = [
-      { title: 'Seasons In The Sun', artist: 'Nirvana', src: 'song.mp3', art: 'song.webp' },
-      { title: 'Take Me Out', artist: 'Franz Ferdinand', src: 'Take Me Out.mp3', art: 'takemeout.jpg' },
-      { title: 'Territorial Pissings', artist: 'Nirvana', src: 'Territorial Pissings - Live At The Paramount1991.mp3', art: 'territorial.jpg', warn: 'LOUD' }
+      { title: 'Seasons In The Sun', artist: 'Nirvana', src: 'song.mp3', art: 'song.webp', lang: 'eng' },
+      { title: 'Take Me Out', artist: 'Franz Ferdinand', src: 'Take Me Out.mp3', art: 'takemeout.jpg', lang: 'eng' },
+      { title: 'Territorial Pissings', artist: 'Nirvana', src: 'Territorial Pissings - Live At The Paramount1991.mp3', art: 'territorial.jpg', warn: 'LOUD', lang: 'eng' }
     ];
     var currentTrack = 0;
+    var currentTab = 'eng';
 
     function loadTrack(idx, autoplay) {
       var track = playlistData[idx];
@@ -439,25 +449,41 @@
       playlistPanel.innerHTML = '';
       var header = document.createElement('div');
       header.className = 'playlist-header';
-      header.innerHTML = '<span class="ph-title">Now Playing</span><span class="ph-count">' + playlistData.length + ' tracks</span>';
+      var tabs = document.createElement('div');
+      tabs.className = 'playlist-tabs';
+      var langs = ['eng', 'rus'];
+      for (var li = 0; li < langs.length; li++) {
+        var tab = document.createElement('span');
+        tab.className = 'playlist-tab' + (currentTab === langs[li] ? ' active' : '');
+        tab.textContent = langs[li];
+        tab.onclick = function(l) { return function() { currentTab = l; renderPlaylist(); }; }(langs[li]);
+        tabs.appendChild(tab);
+      }
+      var filtered = [];
+      for (var fi = 0; fi < playlistData.length; fi++) {
+        if (playlistData[fi].lang === currentTab) filtered.push(playlistData[fi]);
+      }
+      header.innerHTML = '<span class="ph-title">Now Playing</span><span class="ph-count">' + filtered.length + ' tracks</span>';
+      header.appendChild(tabs);
       playlistPanel.appendChild(header);
-      for (var i = 0; i < playlistData.length; i++) {
-        var t = playlistData[i];
+      for (var i = 0; i < filtered.length; i++) {
+        var t = filtered[i];
+        var realIdx = playlistData.indexOf(t);
         var item = document.createElement('div');
-        item.className = 'playlist-item' + (i === currentTrack ? ' active' : '');
+        item.className = 'playlist-item' + (realIdx === currentTrack ? ' active' : '');
+        item.setAttribute('data-real', realIdx);
         var num = '<span class="pi-num">' + (i < 9 ? '0' : '') + (i + 1) + '</span>';
         var artHtml = t.art ? '<img class="pi-img" src="' + t.art + '" onerror="this.style.display=\'none\'">' : '<div class="pi-img"></div>';
         var durHtml = '<span class="pi-dur">' + (t.dur || '--:--') + '</span>';
-        var eqHtml = (i === currentTrack && !audio.paused)
+        var eqHtml = (realIdx === currentTrack && !audio.paused)
           ? '<div class="pi-eq"><div></div><div></div><div></div></div>'
           : '<span class="pi-dur" style="min-width:auto;width:14px"></span>';
-        item.innerHTML = num + artHtml + '<div class="pi-info"><div class="pi-title">' + t.title + (t.warn ? '<span class="pi-warn">' + t.warn + '</span>' : '') + '</div><div class="pi-artist">' + t.artist + '</div></div>' + (i === currentTrack ? eqHtml : durHtml);
-        item.onclick = function(idx) { return function() { loadTrack(idx, true); }; }(i);
+        item.innerHTML = num + artHtml + '<div class="pi-info"><div class="pi-title">' + t.title + (t.warn ? '<span class="pi-warn">' + t.warn + '</span>' : '') + '</div><div class="pi-artist">' + t.artist + '</div></div>' + (realIdx === currentTrack ? eqHtml : durHtml);
+        item.onclick = function(idx) { return function() { loadTrack(idx, true); }; }(realIdx);
         playlistPanel.appendChild(item);
       }
-      // load durations
-      for (var j = 0; j < playlistData.length; j++) {
-        if (!playlistData[j].dur) tryLoadDuration(j);
+      for (var j = 0; j < filtered.length; j++) {
+        if (!filtered[j].dur) tryLoadDuration(playlistData.indexOf(filtered[j]));
       }
     }
     function tryLoadDuration(idx) {
@@ -467,9 +493,16 @@
       tmpAudio.onloadedmetadata = function() {
         if (!tmpAudio) return;
         clearTimeout(tid);
-        playlistData[idx].dur = formatTime(tmpAudio.duration);
+        var d = formatTime(tmpAudio.duration);
+        playlistData[idx].dur = d;
         var items = playlistPanel.querySelectorAll('.playlist-item');
-        if (items[idx]) { var d = items[idx].querySelector('.pi-dur'); if (d) d.textContent = playlistData[idx].dur; }
+        for (var ki = 0; ki < items.length; ki++) {
+          if (parseInt(items[ki].getAttribute('data-real')) === idx) {
+            var durEl = items[ki].querySelector('.pi-dur');
+            if (durEl) durEl.textContent = d;
+            break;
+          }
+        }
         tmpAudio = null;
       };
       tmpAudio.src = playlistData[idx].src;
