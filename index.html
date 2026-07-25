@@ -352,7 +352,8 @@
     var playlistData = [
       { title: 'Seasons In The Sun', artist: 'Nirvana', src: 'song.mp3', art: 'song.webp', lang: 'eng' },
       { title: 'Take Me Out', artist: 'Franz Ferdinand', src: 'Take Me Out.mp3', art: 'takemeout.jpg', lang: 'eng' },
-      { title: 'Territorial Pissings', artist: 'Nirvana', src: 'Territorial Pissings - Live At The Paramount1991.mp3', art: 'territorial.jpg', warn: 'LOUD', lang: 'eng' }
+      { title: 'Territorial Pissings', artist: 'Nirvana', src: 'Territorial Pissings - Live At The Paramount1991.mp3', art: 'territorial.jpg', warn: 'LOUD', lang: 'eng' },
+      { title: 'В подвенечном', artist: 'Пилот', src: 'rus_track.mp3', art: 'rus_cover.jpg', lang: 'rus' }
     ];
     var currentTrack = 0;
     var currentTab = 'eng';
@@ -456,7 +457,7 @@
         var tab = document.createElement('span');
         tab.className = 'playlist-tab' + (currentTab === langs[li] ? ' active' : '');
         tab.textContent = langs[li];
-        tab.onclick = function(l) { return function() { currentTab = l; renderPlaylist(); }; }(langs[li]);
+        tab.onclick = function(l) { return function(e) { e.stopPropagation(); currentTab = l; renderPlaylist(); }; }(langs[li]);
         tabs.appendChild(tab);
       }
       var filtered = [];
