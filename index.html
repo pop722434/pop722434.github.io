@@ -190,41 +190,71 @@
       50% { transform: translateY(4px); }
     }
     .playlist-btn { font-size: 16px; line-height: 1; padding: 6px 8px !important; }
+    .shuffle-btn, .repeat-btn { font-size: 14px; line-height: 1; padding: 6px 7px !important; }
+    .shuffle-btn.active, .repeat-btn.active {
+      background: rgba(255,255,255,0.12) !important;
+      border-color: rgba(255,255,255,0.3) !important;
+      color: #fff !important;
+    }
+    .repeat-btn.one { color: #fff !important; }
+    .repeat-btn.one::after {
+      content: '1'; position: absolute; font-size: 7px; font-weight: 700;
+      top: 1px; right: 3px; color: #fff;
+    }
     .playlist-panel {
       position: fixed; top: 170px; right: 20px; z-index: 99;
       background: rgba(10,12,18,0.85); border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px; padding: 8px; min-width: 240px;
+      border-radius: 16px; padding: 8px; min-width: 260px;
       backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
-      opacity: 0; transform: translateY(-8px) scale(0.97);
-      pointer-events: none; transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-      max-height: 360px; overflow-y: auto;
+      opacity: 0; transform: translateY(-8px) scale(0.95);
+      pointer-events: none; transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      max-height: 380px; overflow-y: auto;
     }
     .playlist-panel.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
     .playlist-panel::-webkit-scrollbar { width: 3px; }
     .playlist-panel::-webkit-scrollbar-track { background: transparent; }
     .playlist-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+    .playlist-header {
+      padding: 6px 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .playlist-header .ph-title { font-size: 11px; color: #8b949e; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; }
+    .playlist-header .ph-count { font-size: 10px; color: #484f58; font-weight: 300; }
     .playlist-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; border-radius: 10px;
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; border-radius: 8px;
       cursor: pointer; transition: all 0.2s;
       border: 1px solid transparent;
     }
     .playlist-item:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); }
     .playlist-item.active { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); }
-    .playlist-item .pi-img { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+    .playlist-item .pi-num {
+      font-size: 11px; color: #484f58; font-weight: 300;
+      min-width: 20px; text-align: right; font-variant-numeric: tabular-nums;
+    }
+    .playlist-item.active .pi-num { color: #e6edf3; }
+    .playlist-item .pi-img { width: 30px; height: 30px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
     .playlist-item .pi-info { flex: 1; min-width: 0; }
     .playlist-item .pi-title { font-size: 12px; color: #e6edf3; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .playlist-item .pi-artist { font-size: 10px; color: #6b7280; font-weight: 300; }
-    .playlist-item .pi-indicator { width: 4px; height: 4px; border-radius: 50%; background: #6b7280; flex-shrink: 0; }
-    .playlist-item.active .pi-indicator { background: #fff; box-shadow: 0 0 8px 2px rgba(255,255,255,0.3); }
-    .playlist-item .pi-indicator.playing {
-      height: 16px; border-radius: 2px; width: 3px;
-      background: linear-gradient(to top, #666, #fff);
-      animation: piBounce 0.6s ease-in-out infinite alternate;
+    .playlist-item .pi-dur {
+      font-size: 10px; color: #484f58; font-weight: 300;
+      min-width: 30px; text-align: right; font-variant-numeric: tabular-nums;
     }
-    @keyframes piBounce {
-      0% { transform: scaleY(0.4); }
-      100% { transform: scaleY(1); }
+    .pi-eq {
+      display: flex; align-items: flex-end; gap: 2px; height: 14px; flex-shrink: 0;
+    }
+    .pi-eq div {
+      width: 2px; border-radius: 1px;
+      background: linear-gradient(to top, #666, #fff);
+      animation: eqAnim 0.6s ease-in-out infinite alternate;
+    }
+    .pi-eq div:nth-child(1) { height: 50%; animation-delay: 0s; }
+    .pi-eq div:nth-child(2) { height: 100%; animation-delay: 0.15s; }
+    .pi-eq div:nth-child(3) { height: 35%; animation-delay: 0.3s; }
+    @keyframes eqAnim {
+      0% { transform: scaleY(0.4); transform-origin: bottom; }
+      100% { transform: scaleY(1); transform-origin: bottom; }
     }
   </style>
 </head>
@@ -247,6 +277,8 @@
       <button id="playBtn">▶</button>
       <button id="pauseBtn">⏸</button>
       <button id="nextBtn" title="Next">⏭</button>
+      <button id="shuffleBtn" class="shuffle-btn" title="Shuffle">🔀</button>
+      <button id="repeatBtn" class="repeat-btn" title="Repeat">🔁</button>
       <span style="color:#6b7280;font-size:11px;font-weight:300">Vol</span>
       <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
       <button class="playlist-btn" id="playlistToggle" title="Playlist">☰</button>
@@ -301,6 +333,10 @@
     var songTitleEl = document.querySelector('.song-title');
     var songArtistEl = document.querySelector('.song-artist');
     var nextBtn = document.getElementById('nextBtn');
+    var shuffleBtn = document.getElementById('shuffleBtn');
+    var repeatBtn = document.getElementById('repeatBtn');
+    var shuffleMode = false;
+    var repeatMode = 'all'; // 'all' | 'one' | 'none'
     var playlistData = [
       { title: 'Seasons In The Sun', artist: 'Nirvana', src: 'song.mp3', art: 'song.webp' },
       { title: 'Take Me Out', artist: 'Franz Ferdinand', src: 'Take Me Out.mp3', art: 'takemeout.jpg' }
@@ -322,16 +358,48 @@
       renderPlaylist();
     }
 
+    function getNextTrack() {
+      if (repeatMode === 'one') return currentTrack;
+      var n;
+      if (shuffleMode) {
+        do { n = Math.floor(Math.random() * playlistData.length); }
+        while (n === currentTrack && playlistData.length > 1);
+        return n;
+      }
+      n = currentTrack + 1;
+      if (n >= playlistData.length) return repeatMode === 'all' ? 0 : -1;
+      return n;
+    }
+
     playBtn.onclick = function() {
       if (!audio.src) { loadTrack(0, true); return; }
       audio.play(); img.classList.add('spinning');
     };
     pauseBtn.onclick = function() { audio.pause(); img.classList.remove('spinning'); };
-    nextBtn.onclick = function() { loadTrack((currentTrack + 1) % playlistData.length, true); };
+    nextBtn.onclick = function() {
+      if (shuffleMode) {
+        var n; do { n = Math.floor(Math.random() * playlistData.length); } while (n === currentTrack && playlistData.length > 1);
+        loadTrack(n, true);
+      } else {
+        loadTrack((currentTrack + 1) % playlistData.length, true);
+      }
+    };
+    shuffleBtn.onclick = function() {
+      shuffleMode = !shuffleMode;
+      shuffleBtn.classList.toggle('active');
+    };
+    repeatBtn.onclick = function() {
+      var modes = ['all', 'one', 'none'];
+      var icons = ['🔁', '🔂', '⏹'];
+      var idx = (modes.indexOf(repeatMode) + 1) % modes.length;
+      repeatMode = modes[idx];
+      repeatBtn.textContent = icons[idx];
+      repeatBtn.className = 'repeat-btn' + (repeatMode !== 'none' ? ' active' : '') + (repeatMode === 'one' ? ' one' : '');
+    };
     audio.onended = function() {
       img.classList.remove('spinning');
-      var n = currentTrack + 1;
-      if (n < playlistData.length) loadTrack(n, true);
+      var n = getNextTrack();
+      if (n >= 0) loadTrack(n, true);
     };
     audio.addEventListener('play', function() { renderPlaylist(); });
     audio.addEventListener('pause', function() { renderPlaylist(); });
@@ -365,16 +433,42 @@
     });
     function renderPlaylist() {
       playlistPanel.innerHTML = '';
+      var header = document.createElement('div');
+      header.className = 'playlist-header';
+      header.innerHTML = '<span class="ph-title">Now Playing</span><span class="ph-count">' + playlistData.length + ' tracks</span>';
+      playlistPanel.appendChild(header);
       for (var i = 0; i < playlistData.length; i++) {
         var t = playlistData[i];
         var item = document.createElement('div');
         item.className = 'playlist-item' + (i === currentTrack ? ' active' : '');
+        var num = '<span class="pi-num">' + (i < 9 ? '0' : '') + (i + 1) + '</span>';
         var artHtml = t.art ? '<img class="pi-img" src="' + t.art + '" onerror="this.style.display=\'none\'">' : '<div class="pi-img"></div>';
-        var ind = '<div class="pi-indicator' + (i === currentTrack && !audio.paused ? ' playing' : '') + '"></div>';
-        item.innerHTML = artHtml + '<div class="pi-info"><div class="pi-title">' + t.title + '</div><div class="pi-artist">' + t.artist + '</div></div>' + ind;
+        var durHtml = '<span class="pi-dur">' + (t.dur || '--:--') + '</span>';
+        var eqHtml = (i === currentTrack && !audio.paused)
+          ? '<div class="pi-eq"><div></div><div></div><div></div></div>'
+          : '<span class="pi-dur" style="min-width:auto;width:14px"></span>';
+        item.innerHTML = num + artHtml + '<div class="pi-info"><div class="pi-title">' + t.title + '</div><div class="pi-artist">' + t.artist + '</div></div>' + (i === currentTrack ? eqHtml : durHtml);
         item.onclick = function(idx) { return function() { loadTrack(idx, true); }; }(i);
         playlistPanel.appendChild(item);
       }
+      // load durations
+      for (var j = 0; j < playlistData.length; j++) {
+        if (!playlistData[j].dur) tryLoadDuration(j);
+      }
+    }
+    function tryLoadDuration(idx) {
+      var tmpAudio = new Audio();
+      tmpAudio.preload = 'metadata';
+      var tid = setTimeout(function() { tmpAudio = null; }, 3000);
+      tmpAudio.onloadedmetadata = function() {
+        if (!tmpAudio) return;
+        clearTimeout(tid);
+        playlistData[idx].dur = formatTime(tmpAudio.duration);
+        var items = playlistPanel.querySelectorAll('.playlist-item');
+        if (items[idx]) { var d = items[idx].querySelector('.pi-dur'); if (d) d.textContent = playlistData[idx].dur; }
+        tmpAudio = null;
+      };
+      tmpAudio.src = playlistData[idx].src;
     }
 
     var viz = document.getElementById('viz');
