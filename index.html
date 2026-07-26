@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Capy</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { min-height: 100%; height: auto; }
@@ -479,21 +480,8 @@
     }
     #contactModal .cm-box input:focus, #contactModal .cm-box textarea:focus { border-color: rgba(255,255,255,0.3); }
     #contactModal .cm-box textarea { resize: vertical; min-height: 80px; }
-    #contactModal .cm-box .cm-captcha { margin-bottom: 14px; }
-    .cm-order { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 180px; margin: 0 auto; }
-    .cm-order div {
-      aspect-ratio: 1; border-radius: 12px; border: 2px solid rgba(255,255,255,0.12);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; font-weight: 700; color: #6b7280;
-      cursor: pointer; transition: all 0.2s; user-select: none;
-      background: rgba(255,255,255,0.03);
-    }
-    .cm-order div:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.06); }
-    .cm-order div.done { border-color: rgba(255,255,255,0.3); color: #e6edf3; background: rgba(255,255,255,0.08); cursor: default; }
-    .cm-order div.wrong { border-color: #f85149; color: #f85149; animation: shake 0.3s; }
-    .cm-order div .cm-label { font-size: 10px; font-weight: 400; color: #484f58; display: block; text-align: center; margin-top: 2px; }
-    .cm-captcha-label { text-align: center; font-size: 11px; color: #484f58; margin-bottom: 8px; }
-    @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+    #contactModal .cm-box .cm-captcha { margin-bottom: 14px; display: flex; justify-content: center; }
+    .cf-turnsticle { transform: scale(0.9); transform-origin: center; }
     #contactModal .cm-box .cm-submit {
       width: 100%; padding: 10px; border: none; border-radius: 8px;
       background: rgba(255,255,255,0.08); color: #e6edf3; font-size: 13px;
@@ -1639,44 +1627,16 @@
       var contactModal = document.getElementById('contactModal');
       var cmName = document.getElementById('cmName');
       var cmMsg = document.getElementById('cmMsg');
-      var cmOrder = document.getElementById('cmOrder');
       var cmSubmit = document.getElementById('cmSubmit');
       var cmClose = document.getElementById('cmClose');
-      var captchaPassed = false;
-      function initOrder() {
-        captchaPassed = false;
-        var nums = [1,2,3,4]; var shuffled = []; var next = 1;
-        while (nums.length > 0) { var r = Math.floor(Math.random() * nums.length); shuffled.push(nums.splice(r,1)[0]); }
-        cmOrder.innerHTML = '';
-        for (var i = 0; i < shuffled.length; i++) {
-          var d = document.createElement('div');
-          d.textContent = shuffled[i];
-          d.style.gridRow = (i < 2 ? 1 : 2) + ''; d.style.gridColumn = (i % 2 + 1) + '';
-          d.onclick = function(val) { return function() {
-            if (captchaPassed) return;
-            if (d.classList.contains('done')) return;
-            if (val === next) {
-              d.classList.add('done'); next++;
-              if (next > 4) captchaPassed = true;
-            } else {
-              d.classList.add('wrong');
-              var self = d;
-              setTimeout(function() { self.classList.remove('wrong'); }, 300);
-              var all = cmOrder.querySelectorAll('.done');
-              for (var j = 0; j < all.length; j++) all[j].classList.remove('done');
-              next = 1;
-            }
-          }; }(shuffled[i]);
-          cmOrder.appendChild(d);
-        }
-      }
-      document.getElementById('contactBtn').onclick = function() { initOrder(); contactModal.classList.add('open'); };
+      document.getElementById('contactBtn').onclick = function() { contactModal.classList.add('open'); };
       cmClose.onclick = function() { contactModal.classList.remove('open'); };
       contactModal.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
       cmSubmit.onclick = function() {
         var name = cmName.value.trim(); var msg = cmMsg.value.trim();
         if (!name || !msg) { toast('Fill in all fields'); return; }
-        if (!captchaPassed) { toast('Click 1→2→3→4 in order first'); return; }
+        var tok = turnstile.getResponse();
+        if (!tok) { toast('Please complete the captcha'); return; }
         var last = parseInt(localStorage.getItem('msgCooldown') || '0', 10);
         if (Date.now() - last < 60000) { toast('Wait ' + Math.ceil((60000 - (Date.now() - last)) / 1000) + 's before sending again'); return; }
         cmSubmit.disabled = true; cmSubmit.textContent = 'Sending...';
@@ -1736,8 +1696,7 @@
       <label>Message:</label>
       <textarea id="cmMsg" placeholder="Write something..." maxlength="1000"></textarea>
       <div class="cm-captcha">
-        <div class="cm-captcha-label">Click in order: 1 → 2 → 3 → 4</div>
-        <div class="cm-order" id="cmOrder"></div>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAAD-awN30FahbmN2S" data-theme="dark"></div>
       </div>
       <button class="cm-submit" id="cmSubmit">Send</button>
     </div>
