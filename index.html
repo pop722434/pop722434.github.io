@@ -838,7 +838,8 @@ Were just starfish on the beach` },
         if (lyricsOpen) closeLyrics();
       }
     });
-    audio.addEventListener('timeupdate', syncLyrics);
+    function syncLoop() { syncLyrics(); requestAnimationFrame(syncLoop); }
+    requestAnimationFrame(syncLoop);
 
     function getNextTrack() {
       if (repeatMode === 'one') return currentTrack;
