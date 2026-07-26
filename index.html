@@ -126,6 +126,23 @@
     .music-player .player-info { flex: 1; min-width: 0; }
     .music-player .player-info .song-title { font-size: 13px; color: #e6edf3; font-weight: 500; white-space: nowrap; }
     .music-player .player-info .song-artist { font-size: 11px; color: #6b7280; font-weight: 300; }
+    .music-player.mini { padding: 8px 12px; gap: 8px; min-width: auto; top: 10px; right: 10px; }
+    .music-player.mini img { width: 32px; height: 32px; }
+    .music-player.mini .player-info .song-title { font-size: 12px; max-width: 100px; }
+    .music-player.mini .player-info .song-artist { display: none; }
+    .music-player.mini .viz { display: none; }
+    .music-player.mini .progress-wrap { display: none; }
+    .music-player.mini #shuffleBtn, .music-player.mini #repeatBtn,
+    .music-player.mini .controls span { display: none; }
+    .music-player.mini input[type="range"] { display: none; }
+    .playlist-btn { position: relative; }
+    .playlist-badge {
+      position: absolute; top: -4px; right: -4px;
+      min-width: 14px; height: 14px; padding: 0 4px;
+      border-radius: 7px; background: #fff; color: #000;
+      font-size: 9px; font-weight: 700; line-height: 14px; text-align: center;
+      pointer-events: none;
+    }
     .music-player audio { display: none; }
     .music-player .controls { display: flex; gap: 6px; align-items: center; }
     .music-player .controls button {
@@ -286,6 +303,7 @@
       <div class="song-artist">Nirvana</div>
     </div>
     <div class="controls">
+      <button id="prevBtn" title="Previous">⏮</button>
       <button id="playBtn">▶</button>
       <button id="pauseBtn">⏸</button>
       <button id="nextBtn" title="Next">⏭</button>
@@ -293,7 +311,7 @@
       <button id="repeatBtn" class="repeat-btn" title="Repeat">🔁</button>
       <span style="color:#6b7280;font-size:11px;font-weight:300">Vol</span>
       <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
-      <button class="playlist-btn" id="playlistToggle" title="Playlist">☰</button>
+      <button class="playlist-btn" id="playlistToggle" title="Playlist">☰<span class="playlist-badge" id="playlistBadge">0</span></button>
     </div>
     <div class="viz" id="viz"></div>
     <div class="progress-wrap" id="progressWrap">
@@ -345,10 +363,11 @@
     var songTitleEl = document.querySelector('.song-title');
     var songArtistEl = document.querySelector('.song-artist');
     var nextBtn = document.getElementById('nextBtn');
+    var prevBtn = document.getElementById('prevBtn');
     var shuffleBtn = document.getElementById('shuffleBtn');
     var repeatBtn = document.getElementById('repeatBtn');
     var shuffleMode = false;
-    var repeatMode = 'all'; // 'all' | 'one' | 'none'
+    var repeatMode = 'all';
     var playlistData = [
       { title: 'Seasons In The Sun', artist: 'Nirvana', src: 'song.mp3', art: 'song.webp', lang: 'eng' },
       { title: 'Take Me Out', artist: 'Franz Ferdinand', src: 'Take Me Out.mp3', art: 'takemeout.jpg', lang: 'eng' },
@@ -361,6 +380,24 @@
     function loadTrack(idx, autoplay) {
       var track = playlistData[idx];
       if (!track) return;
+      if (audio.src && !audio.paused) {
+        var vol = audio.volume;
+        var steps = 10;
+        var si = 0;
+        var fadeOut = setInterval(function() {
+          si++;
+          audio.volume = Math.max(0, vol * (1 - si / steps));
+          if (si >= steps) {
+            clearInterval(fadeOut);
+            doLoad(idx, autoplay, vol);
+          }
+        }, 40);
+      } else {
+        doLoad(idx, autoplay);
+      }
+    }
+    function doLoad(idx, autoplay, restoreVol) {
+      var track = playlistData[idx];
       currentTrack = idx;
       audio.src = track.src;
       songTitleEl.textContent = track.title;
@@ -368,7 +405,20 @@
       if (track.art && img) { img.src = track.art; img.style.display = ''; }
       audio.load();
       if (autoplay) {
-        audio.play().then(function() { img.classList.add('spinning'); }).catch(function(){});
+        audio.play().then(function() {
+          img.classList.add('spinning');
+          if (restoreVol) {
+            var si = 0;
+            var steps = 10;
+            var fadeIn = setInterval(function() {
+              si++;
+              audio.volume = Math.min(restoreVol, (si / steps) * restoreVol);
+              if (si >= steps) { clearInterval(fadeIn); audio.volume = restoreVol; }
+            }, 40);
+          }
+        }).catch(function(){});
+      } else {
+        audio.volume = restoreVol || 1;
       }
       renderPlaylist();
     }
@@ -398,6 +448,19 @@
       } else {
         loadTrack((currentTrack + 1) % playlistData.length, true);
       }
+    };
+    var prevClickTime = 0;
+    prevBtn.onclick = function() {
+      var t = Date.now();
+      if (t - prevClickTime < 400) {
+        audio.currentTime = 0;
+        prevClickTime = 0;
+        return;
+      }
+      prevClickTime = t;
+      var p = currentTrack - 1;
+      if (p < 0) p = playlistData.length - 1;
+      loadTrack(p, true);
     };
     shuffleBtn.onclick = function() {
       shuffleMode = !shuffleMode;
@@ -433,6 +496,25 @@
       var rect = progressBar.getBoundingClientRect();
       audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
     });
+    var playlistBadge = document.getElementById('playlistBadge');
+
+    var scrollTimer;
+    window.addEventListener('scroll', function() {
+      clearTimeout(scrollTimer);
+      if (window.scrollY > 200) { player.classList.add('mini'); }
+      else { scrollTimer = setTimeout(function() { player.classList.remove('mini'); }, 200); }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.target.tagName === 'INPUT') return;
+      switch (e.code) {
+        case 'Space': e.preventDefault(); if (audio.paused) { playBtn.click(); } else { pauseBtn.click(); } break;
+        case 'ArrowLeft': e.preventDefault(); audio.currentTime = Math.max(0, audio.currentTime - 5); break;
+        case 'ArrowRight': e.preventDefault(); audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 5); break;
+        case 'ArrowUp': e.preventDefault(); volumeSlider.value = Math.min(1, parseFloat(volumeSlider.value) + 0.1); volumeSlider.oninput(); break;
+        case 'ArrowDown': e.preventDefault(); volumeSlider.value = Math.max(0, parseFloat(volumeSlider.value) - 0.1); volumeSlider.oninput(); break;
+      }
+    });
     function formatTime(s) {
       var m = Math.floor(s / 60), sec = Math.floor(s % 60);
       return m + ':' + (sec < 10 ? '0' : '') + sec;
@@ -447,6 +529,7 @@
       }
     });
     function renderPlaylist() {
+      playlistBadge.textContent = playlistData.length;
       playlistPanel.innerHTML = '';
       var header = document.createElement('div');
       header.className = 'playlist-header';
