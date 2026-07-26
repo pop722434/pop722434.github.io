@@ -243,6 +243,15 @@
     }
     .playlist-tab:hover { border-color: rgba(255,255,255,0.15); color: #9ca3af; }
     .playlist-tab.active { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); color: #e6edf3; }
+    .playlist-search {
+      margin: 4px 8px 8px; padding: 6px 10px; width: calc(100% - 16px);
+      border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;
+      background: rgba(255,255,255,0.04); color: #e6edf3;
+      font-size: 12px; font-family: 'Inter', sans-serif; outline: none;
+      transition: border-color 0.2s;
+    }
+    .playlist-search:focus { border-color: rgba(255,255,255,0.2); }
+    .playlist-search::placeholder { color: #484f58; }
     .playlist-item {
       display: flex; align-items: center; gap: 8px;
       padding: 8px 10px; border-radius: 8px;
@@ -311,6 +320,7 @@
       <button id="repeatBtn" class="repeat-btn" title="Repeat">🔁</button>
       <span style="color:#6b7280;font-size:11px;font-weight:300">Vol</span>
       <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+      <button id="downloadBtn" title="Download">⬇</button>
       <button class="playlist-btn" id="playlistToggle" title="Playlist">☰<span class="playlist-badge" id="playlistBadge">0</span></button>
     </div>
     <div class="viz" id="viz"></div>
@@ -339,13 +349,23 @@
     }
     function drawParticles() {
       ctx.clearRect(0, 0, w, h);
+      var intensity = 0;
+      if (analyser && dataArray && !audio.paused) {
+        analyser.getByteFrequencyData(dataArray);
+        for (var fi = 0; fi < dataArray.length; fi++) { intensity += dataArray[fi]; }
+        intensity = intensity / dataArray.length / 255;
+      }
+      var speedMul = 1 + intensity * 5;
+      var sizeMul = 1 + intensity * 2;
+      var opacityAdd = intensity * 0.6;
       for (var i = 0; i < particles.length; i++) {
         var p = particles[i];
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,' + p.o + ')';
+        ctx.arc(p.x, p.y, p.r * sizeMul, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,' + Math.min(1, p.o + opacityAdd) + ')';
         ctx.fill();
-        p.x += p.dx; p.y += p.dy;
+        p.x += p.dx * speedMul;
+        p.y += p.dy * speedMul;
         if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
         if (p.x < -10) p.x = w + 10;
         if (p.x > w + 10) p.x = -10;
@@ -482,6 +502,18 @@
     audio.addEventListener('play', function() { renderPlaylist(); });
     audio.addEventListener('pause', function() { renderPlaylist(); });
     volumeSlider.oninput = function() { audio.volume = volumeSlider.value; };
+    var downloadBtn = document.getElementById('downloadBtn');
+    downloadBtn.onclick = function() {
+      var track = playlistData[currentTrack];
+      if (!track) return;
+      var a = document.createElement('a');
+      a.href = track.src;
+      a.download = track.title + '.mp3';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() { document.body.removeChild(a); }, 100);
+    };
     var progressFill = document.getElementById('progressFill');
     var timeCurrent = document.getElementById('timeCurrent');
     var timeTotal = document.getElementById('timeTotal');
@@ -543,13 +575,29 @@
         tab.onclick = function(l) { return function(e) { e.stopPropagation(); currentTab = l; renderPlaylist(); }; }(langs[li]);
         tabs.appendChild(tab);
       }
-      var filtered = [];
+      var filteredAll = [];
       for (var fi = 0; fi < playlistData.length; fi++) {
-        if (playlistData[fi].lang === currentTab) filtered.push(playlistData[fi]);
+        if (playlistData[fi].lang === currentTab) filteredAll.push(playlistData[fi]);
       }
-      header.innerHTML = '<span class="ph-title">Now Playing</span><span class="ph-count">' + filtered.length + ' tracks</span>';
+      header.innerHTML = '<span class="ph-title">Now Playing</span><span class="ph-count">' + filteredAll.length + ' tracks</span>';
       header.appendChild(tabs);
       playlistPanel.appendChild(header);
+
+      var searchInput = document.createElement('input');
+      searchInput.className = 'playlist-search';
+      searchInput.placeholder = 'Search...';
+      searchInput.oninput = function() { renderPlaylist(); };
+      searchInput.onclick = function(e) { e.stopPropagation(); };
+      playlistPanel.appendChild(searchInput);
+
+      var query = (searchInput.value || '').toLowerCase();
+      var filtered = [];
+      for (var fi2 = 0; fi2 < filteredAll.length; fi2++) {
+        var t = filteredAll[fi2];
+        if (!query || t.title.toLowerCase().indexOf(query) !== -1 || t.artist.toLowerCase().indexOf(query) !== -1) {
+          filtered.push(t);
+        }
+      }
       for (var i = 0; i < filtered.length; i++) {
         var t = filtered[i];
         var realIdx = playlistData.indexOf(t);
