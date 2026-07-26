@@ -1618,7 +1618,8 @@
         { h3: 'About', ps: ["Just a random person on the internet. Nothing special here :'"] },
         { h3: 'Interests', ps: ['Roblox exploiting and F3X building :3.'] },
         { h3: 'Projects', ps: ['Nothing serious yet, but working on it.'] },
-        { h3: 'Links', ps: ['Discord: sudoeoev', 'Telegram: @WotwFan', 'Usernames u may know: Capybara, 7day, Demidozz1, hummerhow, WotwFan, materialbase_color, Fuzzberry, someonebad, horrible,'] }
+        { h3: 'Links', ps: ['Discord: sudoeoev', 'Telegram: @WotwFan', 'Usernames u may know: Capybara, 7day, Demidozz1, hummerhow, WotwFan, materialbase_color, Fuzzberry, someonebad, horrible,'] },
+        { h3: 'Crypto Addresses', ps: [] }
       ];
       for (var pi = 0; pi < allPanels.length; pi++) {
         var pt = panelTexts[pi];
@@ -1694,7 +1695,7 @@
             setTimeout(function() { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1500);
           });
         };
-      });
+});
     });
     var addrsData = [
       { label: 'LTC', addr: 'LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi', api: 'https://api.blockchair.com/litecoin/dashboards/address/' },
@@ -1702,10 +1703,8 @@
       { label: 'TRX', addr: 'TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW', api: 'https://apilist.tronscan.org/api/account?address=' },
       { label: 'BTC', addr: 'bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs', api: 'https://blockchain.info/q/addressbalance/' },
     ];
-    var corsProxy = 'https://api.allorigins.win/raw?url=';
     addrsData.forEach(function(c) {
-      var url = c.api + c.addr;
-      if (c.label !== 'BTC' && c.label !== 'TRX') url = corsProxy + encodeURIComponent(url);
+      var url = (c.label === 'BTC' || c.label === 'TRX') ? c.api + c.addr : 'https://api.allorigins.win/raw?url=' + encodeURIComponent(c.api + c.addr);
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(d) {
@@ -1724,7 +1723,15 @@
             }
           }
         })
-        .catch(function() {});
+        .catch(function() {
+          var rows = cryptoList.querySelectorAll('.cr-label');
+          for (var i = 0; i < rows.length; i++) {
+            if (rows[i].textContent === c.label) {
+              var balEl = rows[i].closest('.crypto-row').querySelector('.cr-balance');
+              if (balEl) balEl.textContent = 'Failed';
+            }
+          }
+        });
     });
     var observer = new IntersectionObserver(function(entries) {
       entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
