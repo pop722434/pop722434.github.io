@@ -1687,7 +1687,7 @@
     });
     var addrsData = [
       { label: 'LTC', addr: 'LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi', api: 'https://api.blockchair.com/litecoin/dashboards/address/' },
-      { label: 'ETH', addr: '0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B', api: 'https://api.etherscan.io/api?module=account&action=balance&address=' + '&tag=latest&apikey=YourApiKeyToken' },
+      { label: 'ETH', addr: '0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B', api: 'https://api.blockchair.com/ethereum/dashboards/address/' },
       { label: 'TRX', addr: 'TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW', api: 'https://apilist.tronscan.org/api/account?address=' },
       { label: 'BTC', addr: 'bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs', api: 'https://blockchain.info/q/addressbalance/' },
     ];
@@ -1699,7 +1699,7 @@
           if (c.label === 'BTC') bal = (d / 1e8).toFixed(8);
           else if (c.label === 'LTC') bal = (d.data[c.addr].address.balance / 1e8).toFixed(8);
           else if (c.label === 'TRX') bal = (d.balance / 1e6).toFixed(6);
-          else if (c.label === 'ETH') bal = (d.result / 1e18).toFixed(6);
+          else if (c.label === 'ETH') bal = (d.data[c.addr].address.balance / 1e18).toFixed(6);
           if (bal) {
             var rows = cryptoList.querySelectorAll('.cr-label');
             for (var i = 0; i < rows.length; i++) {
