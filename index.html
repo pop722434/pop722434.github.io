@@ -406,7 +406,7 @@
       { title: 'Territorial Pissings', artist: 'Nirvana', src: 'Territorial Pissings - Live At The Paramount1991.mp3', art: 'territorial.jpg', warn: 'LOUD', lang: 'eng' },
       { title: 'В подвенечном', artist: 'Пилот', src: 'rus_track.mp3', art: 'rus_cover.jpg', lang: 'rus' }
     ];
-    var currentTrack = 0;
+    var currentTrack = 0, _searchVal = '';
     var currentTab = 'eng';
 
     function loadTrack(idx, autoplay) {
@@ -598,7 +598,8 @@
       var searchInput = document.createElement('input');
       searchInput.className = 'playlist-search';
       searchInput.placeholder = 'Search...';
-      searchInput.oninput = function() { var v = this.value; renderPlaylist(); var ni = playlistPanel.querySelector('.playlist-search'); if (ni) { ni.value = v; ni.focus(); ni.selectionStart = ni.selectionEnd = v.length; } };
+      if (_searchVal) searchInput.value = _searchVal;
+      searchInput.oninput = function() { _searchVal = this.value; renderPlaylist(); var ni = playlistPanel.querySelector('.playlist-search'); if (ni) { ni.focus(); ni.selectionStart = ni.selectionEnd = _searchVal.length; } };
       searchInput.onclick = function(e) { e.stopPropagation(); };
       playlistPanel.appendChild(searchInput);
 
