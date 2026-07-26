@@ -1701,7 +1701,7 @@ var addrsData = [
       { label: 'LTC', addr: 'LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi', api: null },
       { label: 'ETH', addr: '0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B', api: null },
       { label: 'TRX', addr: 'TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW', api: 'https://apilist.tronscan.org/api/account?address=' },
-      { label: 'BTC', addr: 'bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs', api: 'https://blockchain.info/q/addressbalance/' },
+      { label: 'BTC', addr: 'bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs', api: 'https://mempool.space/api/address/' },
     ];
     addrsData.forEach(function(c) {
       if (!c.api) {
@@ -1718,14 +1718,14 @@ var addrsData = [
         .then(function(r) { return r.json(); })
         .then(function(d) {
           var bal = null;
-          if (c.label === 'BTC') bal = (d / 1e8).toFixed(8);
+          if (c.label === 'BTC') bal = (d.chain_stats.funded_txo_sum - d.chain_stats.spent_txo_sum) / 1e8;
           else if (c.label === 'TRX') bal = (d.balance / 1e6).toFixed(6);
-          if (bal) {
+          if (bal !== null) {
             var rows = cryptoList.querySelectorAll('.cr-label');
             for (var i = 0; i < rows.length; i++) {
               if (rows[i].textContent === c.label) {
                 var balEl = rows[i].closest('.crypto-row').querySelector('.cr-balance');
-                if (balEl) balEl.textContent = bal + ' ' + c.label;
+                if (balEl) balEl.textContent = (typeof bal === 'number' ? bal.toFixed(8) : bal) + ' ' + c.label;
               }
             }
           }
