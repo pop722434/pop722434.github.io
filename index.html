@@ -348,6 +348,11 @@
       text-shadow: 0 0 30px rgba(255,255,255,0.1);
     }
     .lyrics-line.past { color: #3a3f47; font-size: 13px; opacity: 0.4; }
+    .lyrics-instr { display: flex; justify-content: center; align-items: center; gap: 5px; padding: 4px 0; height: 20px; }
+    .lyrics-instr span { width: 3px; height: 3px; border-radius: 50%; background: #484f58; animation: instrPulse 1.4s ease-in-out infinite; }
+    .lyrics-instr span:nth-child(2) { animation-delay: 0.25s; }
+    .lyrics-instr span:nth-child(3) { animation-delay: 0.5s; }
+    @keyframes instrPulse { 0%, 100% { opacity: 0.15; transform: scale(0.5); } 50% { opacity: 0.7; transform: scale(1); } }
     .lyrics-loading, .lyrics-error { text-align: center; padding: 60px 0; font-size: 13px; }
     .lyrics-loading { color: #6b7280; }
     .lyrics-error { color: #f85149; }
@@ -693,7 +698,7 @@ Were just starfish on the beach` },
       html += '<div class="lyrics-header">' + artHtml + '<div><div class="lh-title">' + (track ? escapeHtml(track.title) : '') + '</div><div class="lh-artist">' + (track ? escapeHtml(track.artist) : '') + '</div></div></div>';
       html += '<div class="lyrics-body">';
       for (var i = 0; i < lyrics.length; i++) {
-        if (!lyrics[i].text) { html += '<div style="height:10px"></div>'; continue; }
+        if (!lyrics[i].text) { html += '<div class="lyrics-instr"><span></span><span></span><span></span></div>'; continue; }
         html += '<div class="lyrics-line' + (lyrics[i].time < 0 ? ' no-sync' : '') + '" data-lyr="' + i + '">' + escapeHtml(lyrics[i].text) + '</div>';
       }
       html += '</div>';
@@ -711,14 +716,21 @@ Were just starfish on the beach` },
       }
       if (idx === currentLineIdx) return;
       currentLineIdx = idx;
-      var lines = lyricsPanel.querySelectorAll('.lyrics-body .lyrics-line');
+      var body = lyricsPanel.querySelector('.lyrics-body');
+      if (!body) return;
+      var lines = body.querySelectorAll('.lyrics-line');
       for (var i = 0; i < lines.length; i++) {
         lines[i].classList.remove('active', 'past');
-        if (i < idx && currentLyrics[i] && currentLyrics[i].time >= 0) lines[i].classList.add('past');
       }
-      if (idx >= 0 && idx < lines.length) {
-        lines[idx].classList.add('active');
-        lines[idx].scrollIntoView({ block: 'center', behavior: 'smooth' });
+      for (var i = 0; i < idx; i++) {
+        if (currentLyrics[i] && currentLyrics[i].time >= 0 && currentLyrics[i].text) {
+          var el = body.querySelector('[data-lyr="' + i + '"]');
+          if (el) el.classList.add('past');
+        }
+      }
+      if (idx >= 0 && currentLyrics[idx] && currentLyrics[idx].text) {
+        var el = body.querySelector('[data-lyr="' + idx + '"]');
+        if (el) { el.classList.add('active'); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }
       }
     }
     function closeLyrics() { lyricsOpen = false; lyricsPanel.classList.remove('open'); }
