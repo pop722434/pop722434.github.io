@@ -1603,13 +1603,28 @@
     window.addEventListener('beforeunload', saveState);
     restoreState();
     populateHelpModal();
+    var vcEl = document.getElementById('visitorCount');
+    var cachedCount = localStorage.getItem('visitorCountCache');
+    if (cachedCount) vcEl.textContent = '👤 ' + cachedCount + ' unique';
+    var visited = localStorage.getItem('visited');
+    fetch('https://api.countapi.xyz/' + (visited ? 'get' : 'hit') + '/pop722434.github.io/visitors')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        var n = d.value;
+        vcEl.textContent = '👤 ' + n + ' unique';
+        localStorage.setItem('visitorCountCache', n);
+        if (!visited) localStorage.setItem('visited', '1');
+      })
+      .catch(function() {
+        if (!cachedCount) vcEl.textContent = '';
+      });
   </script>
   <div id="keybindsHint"><span>Space</span> play/pause &nbsp; <span>N/P</span> next/prev &nbsp; <span>L</span> lyrics &nbsp; <span>M</span> mute &nbsp; <span>S</span> shuffle &nbsp; <span>R</span> repeat &nbsp; <span>F</span> fullviz &nbsp; <span>`</span> help</div>
   <div class="spacer"></div>
   <div class="content">
     <div class="handle"><h1></h1><div class="at"></div></div>
     <p class="bio"></p>
-    <div class="stats"><div class="stat"></div></div>
+    <div class="stats"><div class="stat"></div><div class="stat" id="visitorCount"></div></div>
     <div class="panel"><h3></h3><p></p></div>
     <div class="panel"><h3></h3><p></p></div>
     <div class="panel"><h3></h3><p></p></div>
