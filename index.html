@@ -1697,22 +1697,29 @@
         };
 });
     });
-    var addrsData = [
-      { label: 'LTC', addr: 'LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi', api: 'https://api.blockchair.com/litecoin/dashboards/address/' },
-      { label: 'ETH', addr: '0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B', api: 'https://api.blockchair.com/ethereum/dashboards/address/' },
+var addrsData = [
+      { label: 'LTC', addr: 'LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi', api: null },
+      { label: 'ETH', addr: '0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B', api: null },
       { label: 'TRX', addr: 'TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW', api: 'https://apilist.tronscan.org/api/account?address=' },
       { label: 'BTC', addr: 'bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs', api: 'https://blockchain.info/q/addressbalance/' },
     ];
     addrsData.forEach(function(c) {
-      var url = (c.label === 'BTC' || c.label === 'TRX') ? c.api + c.addr : 'https://api.allorigins.win/raw?url=' + encodeURIComponent(c.api + c.addr);
-      fetch(url)
+      if (!c.api) {
+        var rows = cryptoList.querySelectorAll('.cr-label');
+        for (var i = 0; i < rows.length; i++) {
+          if (rows[i].textContent === c.label) {
+            var balEl = rows[i].closest('.crypto-row').querySelector('.cr-balance');
+            if (balEl) balEl.textContent = 'N/A (CORS)';
+          }
+        }
+        return;
+      }
+      fetch(c.api + c.addr)
         .then(function(r) { return r.json(); })
         .then(function(d) {
           var bal = null;
           if (c.label === 'BTC') bal = (d / 1e8).toFixed(8);
-          else if (c.label === 'LTC') bal = (d.data[c.addr].address.balance / 1e8).toFixed(8);
           else if (c.label === 'TRX') bal = (d.balance / 1e6).toFixed(6);
-          else if (c.label === 'ETH') bal = (d.data[c.addr].address.balance / 1e18).toFixed(6);
           if (bal) {
             var rows = cryptoList.querySelectorAll('.cr-label');
             for (var i = 0; i < rows.length; i++) {
