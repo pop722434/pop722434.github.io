@@ -1691,8 +1691,11 @@
       { label: 'TRX', addr: 'TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW', api: 'https://apilist.tronscan.org/api/account?address=' },
       { label: 'BTC', addr: 'bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs', api: 'https://blockchain.info/q/addressbalance/' },
     ];
+    var corsProxy = 'https://api.allorigins.win/raw?url=';
     addrsData.forEach(function(c) {
-      fetch(c.api + c.addr)
+      var url = c.api + c.addr;
+      if (c.label !== 'BTC' && c.label !== 'TRX') url = corsProxy + encodeURIComponent(url);
+      fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(d) {
           var bal = null;
