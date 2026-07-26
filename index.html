@@ -459,53 +459,46 @@
     var repeatMode = 'all';
     var playlistData = [
       { title: 'Seasons In The Sun', artist: 'Nirvana', src: 'song.mp3', art: 'song.webp', lang: 'eng',
-        lyrics: `Goodbye my friend, it's hard to die
-When all the birds are singing in the sky
-Now that the spring is in the air
-Pretty girls are everywhere
-Think of me and I'll be there
-
-Goodbye Papa, please pray for me
-I was the black sheep of the family
-I don't know all these words
-I have boggy turds
-With my BB gun I would kill birds
-
-We had joy, we had fun
-We had seasons in the sun
-But the hills that we climbed
-Were just seasons out of time
-
-All our lives, we had fun
-We had seasons in the sun
-But the stars that we reached
-Were just starfish on the beach
-
-Goodbye Michelle, my little one
-I was the apple of the shining sun
-And I have loved you every week
-All my tears are salty
-I think that now I will start to leave
-
-We had joy, we had fun
-We had seasons in the sun
-But the hills that we climbed
-Were just seasons out of time
-
-We had joy, we had fun
-We had seasons in the sun
-But the stars that we reached
-Were just starfish on the beach
-
-We had joy, we had fun
-We had seasons in the sun
-But the hills that we climbed
-Were just seasons out of time
-
-We had joy, we had fun
-We had seasons in the sun
-But the stars that we reached
-Were just starfish on the beach` },
+        lyricsLRC: `[00:03.92] Go, Krist
+[00:13.98] Goodbye my friend, it's hard to die
+[00:18.85] When all the birds are singing in the sky
+[00:24.17] And all the flowers are everywhere
+[00:29.98] Pretty girls are everywhere
+[00:35.37] Think of me and I'll be there
+[00:44.97] Goodbye Papa, please pray for me
+[00:50.26] I was the black sheep of the family
+[00:55.77] And I don't know all these words
+[01:01.49] I had boggy turds
+[01:06.62] With my BB gun I would kill birds
+[01:13.46] We had joy, we had fun
+[01:16.05] We had seasons in the sun
+[01:18.73] But the hills that we climbed
+[01:21.25] Were just seasons out of time
+[01:27.81] All our lives, we had fun
+[01:30.34] We had seasons in the sun
+[01:33.01] But the world that we reached
+[01:35.81] Were just starfish on the beach
+[01:46.65] Goodbye Michelle, my little one
+[01:52.05] I was the apple of the shining sun
+[01:57.42] Another apple out of reach
+[02:03.14] All my tears are salty
+[02:08.13] I think now I was taught to weep
+[02:15.13] We had joy, we had fun
+[02:17.69] We had seasons in the sun
+[02:20.49] All the hills that we climb
+[02:23.09] Were the seasons out of time
+[02:29.74] We had joy, we had fun
+[02:32.37] We had seasons in the sun
+[02:35.17] But the hill on the beach
+[02:37.77] Were just starfish on the beach
+[02:44.21] We had joy, we had fun
+[02:46.74] We had seasons in the sun
+[02:49.38] But the hills that we climb
+[02:51.97] Were just seasons out of time
+[02:58.58] Oh the joy, we had fun
+[03:01.25] We had seasons in the sun
+[03:03.62] But the stars that we reached
+[03:06.41] Were just starfish on the beach` },
       { title: 'Take Me Out', artist: 'Franz Ferdinand', src: 'Take Me Out.mp3', art: 'takemeout.jpg', lang: 'eng',
         lyricsKaraoke: `[00:05.50]<00:05.50>So <00:06.13>if <00:06.52>you're <00:06.73>lonely
 [00:08.80]<00:08.80>You <00:09.31>know <00:09.76>I'm <00:10.30>here <00:11.14>waiting <00:11.53>for <00:11.71>you
@@ -689,13 +682,31 @@ Were just starfish on the beach` },
       }
       return result;
     }
+    function lrcToKaraoke(parsed) {
+      var result = [];
+      for (var i = 0; i < parsed.length; i++) {
+        var line = parsed[i];
+        if (!line.text) { result.push({ lineStart: line.time, words: [] }); continue; }
+        var words = line.text.split(/\s+/);
+        if (words.length === 0) { result.push({ lineStart: line.time, words: [] }); continue; }
+        var lineEnd = (i + 1 < parsed.length && parsed[i + 1].time > line.time) ? parsed[i + 1].time : line.time + 5;
+        var dur = lineEnd - line.time;
+        var perWord = dur / words.length;
+        var wds = [];
+        for (var w = 0; w < words.length; w++) {
+          wds.push({ word: words[w], start: line.time + w * perWord });
+        }
+        result.push({ lineStart: line.time, words: wds });
+      }
+      return result;
+    }
     function fetchLyrics(idx) {
       if (lyricsCache[idx]) { renderLyrics(lyricsCache[idx]); return; }
       var track = playlistData[idx];
       if (!track) return;
       if (track.lyricsKaraoke || track.lyricsLRC || track.lyrics) {
         if (track.lyricsKaraoke) { currentLyrics = parseKaraokeLRC(track.lyricsKaraoke); }
-        else if (track.lyricsLRC) { currentLyrics = parseLRC(track.lyricsLRC); }
+        else if (track.lyricsLRC) { currentLyrics = lrcToKaraoke(parseLRC(track.lyricsLRC)); }
         else { currentLyrics = track.lyrics.split('\n').map(function(l){ return { time: -1, text: l.trim() }; }); }
         lyricsCache[idx] = currentLyrics;
         renderLyrics(currentLyrics);
