@@ -1704,8 +1704,8 @@
             var rows = cryptoList.querySelectorAll('.cr-label');
             for (var i = 0; i < rows.length; i++) {
               if (rows[i].textContent === c.label) {
-                var addrEl = rows[i].closest('.crypto-row').querySelector('.cr-addr');
-                if (addrEl) addrEl.textContent = bal + ' ' + c.label;
+                var balEl = rows[i].closest('.crypto-row').querySelector('.cr-balance');
+                if (balEl) balEl.textContent = bal + ' ' + c.label;
               }
             }
           }
