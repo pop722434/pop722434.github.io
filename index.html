@@ -1701,10 +1701,12 @@
           else if (c.label === 'TRX') bal = (d.balance / 1e6).toFixed(6);
           else if (c.label === 'ETH') bal = (d.result / 1e18).toFixed(6);
           if (bal) {
-            var row = cryptoList.querySelector('.cr-label:contains("' + c.label + '")');
-            if (row) {
-              var addrEl = row.closest('.crypto-row').querySelector('.cr-addr');
-              if (addrEl) addrEl.textContent = bal + ' ' + c.label;
+            var rows = cryptoList.querySelectorAll('.cr-label');
+            for (var i = 0; i < rows.length; i++) {
+              if (rows[i].textContent === c.label) {
+                var addrEl = rows[i].closest('.crypto-row').querySelector('.cr-addr');
+                if (addrEl) addrEl.textContent = bal + ' ' + c.label;
+              }
             }
           }
         })
