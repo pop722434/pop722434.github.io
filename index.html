@@ -294,9 +294,21 @@
       0% { transform: scaleY(0.4); transform-origin: bottom; }
       100% { transform: scaleY(1); transform-origin: bottom; }
     }
+    .bg-viz {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: -2; opacity: 0.35;
+    }
+    .pi-drag {
+      font-size: 10px; color: #484f58; cursor: grab; flex-shrink: 0;
+      padding: 0 2px 0 0; user-select: none; line-height: 1;
+    }
+    .playlist-item[draggable=true] { cursor: grab; }
+    .playlist-item.dragging { opacity: 0.3; }
+    .playlist-item.drag-over { border-color: rgba(255,255,255,0.25) !important; background: rgba(255,255,255,0.08) !important; }
   </style>
 </head>
 <body>
+  <canvas id="bgViz" class="bg-viz"></canvas>
   <canvas id="particles"></canvas>
   <div id="loader">
     <div class="bar"><div class="bar-inner" id="loadBar"></div></div>
@@ -336,7 +348,7 @@
     var c = document.getElementById('particles');
     var ctx = c.getContext('2d');
     var w, h, particles = [];
-    function resize() { w = c.width = window.innerWidth; h = c.height = window.innerHeight; }
+    function resize() { w = c.width = window.innerWidth; h = c.height = window.innerHeight; bgW = bgCanvas.width = w; bgH = bgCanvas.height = h; }
     window.onresize = resize; resize();
     for (var i = 0; i < 80; i++) {
       particles.push({
@@ -604,14 +616,46 @@
         var item = document.createElement('div');
         item.className = 'playlist-item' + (realIdx === currentTrack ? ' active' : '');
         item.setAttribute('data-real', realIdx);
+        var dragHtml = '<span class="pi-drag">⠿</span>';
         var num = '<span class="pi-num">' + (i < 9 ? '0' : '') + (i + 1) + '</span>';
         var artHtml = t.art ? '<img class="pi-img" src="' + t.art + '" onerror="this.style.display=\'none\'">' : '<div class="pi-img"></div>';
         var durHtml = '<span class="pi-dur">' + (t.dur || '--:--') + '</span>';
         var eqHtml = (realIdx === currentTrack && !audio.paused)
           ? '<div class="pi-eq"><div></div><div></div><div></div></div>'
           : '<span class="pi-dur" style="min-width:auto;width:14px"></span>';
-        item.innerHTML = num + artHtml + '<div class="pi-info"><div class="pi-title">' + t.title + (t.warn ? '<span class="pi-warn">' + t.warn + '</span>' : '') + '</div><div class="pi-artist">' + t.artist + '</div></div>' + (realIdx === currentTrack ? eqHtml : durHtml);
-        item.onclick = function(idx) { return function() { loadTrack(idx, true); }; }(realIdx);
+        item.innerHTML = dragHtml + num + artHtml + '<div class="pi-info"><div class="pi-title">' + t.title + (t.warn ? '<span class="pi-warn">' + t.warn + '</span>' : '') + '</div><div class="pi-artist">' + t.artist + '</div></div>' + (realIdx === currentTrack ? eqHtml : durHtml);
+        if (!query) {
+          item.draggable = true;
+          item.onclick = function(idx) { return function() { loadTrack(idx, true); }; }(realIdx);
+          item.addEventListener('dragstart', function(e) {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', e.currentTarget.getAttribute('data-real'));
+            e.currentTarget.classList.add('dragging');
+          });
+          item.addEventListener('dragover', function(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.currentTarget.classList.add('drag-over'); });
+          item.addEventListener('dragleave', function(e) { if (!e.currentTarget.contains(e.relatedTarget)) { e.currentTarget.classList.remove('drag-over'); } });
+          item.addEventListener('drop', function(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            var from = parseInt(e.dataTransfer.getData('text/plain'));
+            var to = parseInt(e.currentTarget.getAttribute('data-real'));
+            if (isNaN(from) || isNaN(to) || from === to) return;
+            var moved = playlistData.splice(from, 1)[0];
+            var newIdx = to;
+            if (from < to) newIdx--;
+            playlistData.splice(newIdx, 0, moved);
+            if (currentTrack === from) currentTrack = newIdx;
+            else if (currentTrack > from && currentTrack <= newIdx) currentTrack--;
+            else if (currentTrack < from && currentTrack >= newIdx) currentTrack++;
+            renderPlaylist();
+          });
+          item.addEventListener('dragend', function(e) {
+            e.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.drag-over').forEach(function(el) { el.classList.remove('drag-over'); });
+          });
+        } else {
+          item.onclick = function(idx) { return function() { loadTrack(idx, true); }; }(realIdx);
+        }
         playlistPanel.appendChild(item);
       }
       for (var j = 0; j < filtered.length; j++) {
@@ -668,6 +712,33 @@
         updateViz();
       } catch(e) {}
     }
+
+    var bgCanvas = document.getElementById('bgViz');
+    var bgCtx = bgCanvas.getContext('2d');
+    var bgW, bgH;
+    function resizeBg() { bgW = bgCanvas.width = window.innerWidth; bgH = bgCanvas.height = window.innerHeight; }
+    resizeBg();
+    var barCount = 64;
+    function drawBgViz() {
+      bgCtx.clearRect(0, 0, bgW, bgH);
+      if (analyser && dataArray && !audio.paused) {
+        analyser.getByteFrequencyData(dataArray);
+        var bw = bgW / barCount;
+        for (var i = 0; i < barCount; i++) {
+          var val = dataArray[Math.floor(i * dataArray.length / barCount)] / 255;
+          var barH = val * bgH * 0.3;
+          var x = i * bw;
+          var grad = bgCtx.createLinearGradient(0, bgH - barH, 0, bgH);
+          grad.addColorStop(0, 'rgba(255,255,255,0)');
+          grad.addColorStop(0.5, 'rgba(255,255,255,' + (val * 0.15) + ')');
+          grad.addColorStop(1, 'rgba(255,255,255,' + (val * 0.3) + ')');
+          bgCtx.fillStyle = grad;
+          bgCtx.fillRect(x, bgH - barH, bw + 1, barH);
+        }
+      }
+      requestAnimationFrame(drawBgViz);
+    }
+    drawBgViz();
 
     var trailDots = [];
     var trailCount = 16;
