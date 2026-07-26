@@ -479,9 +479,18 @@
     }
     #contactModal .cm-box input:focus, #contactModal .cm-box textarea:focus { border-color: rgba(255,255,255,0.3); }
     #contactModal .cm-box textarea { resize: vertical; min-height: 80px; }
-    #contactModal .cm-box .cm-captcha { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; }
-    #contactModal .cm-box .cm-captcha span { color: #6b7280; font-size: 13px; white-space: nowrap; }
-    #contactModal .cm-box .cm-captcha input { width: 70px; margin-bottom: 0; }
+    #contactModal .cm-box .cm-captcha { margin-bottom: 14px; }
+    .cm-check { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+    .cm-check input { display: none; }
+    .cm-checkmark {
+      width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.2); border-radius: 4px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      transition: all 0.2s; background: rgba(255,255,255,0.03);
+    }
+    .cm-check input:checked + .cm-checkmark { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.4); }
+    .cm-check input:checked + .cm-checkmark::after {
+      content: '✓'; color: #e6edf3; font-size: 13px; font-weight: 700; line-height: 1;
+    }
     #contactModal .cm-box .cm-submit {
       width: 100%; padding: 10px; border: none; border-radius: 8px;
       background: rgba(255,255,255,0.08); color: #e6edf3; font-size: 13px;
@@ -1627,19 +1636,16 @@
       var contactModal = document.getElementById('contactModal');
       var cmName = document.getElementById('cmName');
       var cmMsg = document.getElementById('cmMsg');
-      var cmCaptcha = document.getElementById('cmCaptcha');
-      var cmCaptchaQ = document.getElementById('cmCaptchaQ');
+      var cmRobot = document.getElementById('cmRobot');
       var cmSubmit = document.getElementById('cmSubmit');
       var cmClose = document.getElementById('cmClose');
-      var ans;
-      function genCaptcha() { var a = Math.floor(Math.random()*9)+1; var b = Math.floor(Math.random()*9)+1; ans = a + b; cmCaptchaQ.textContent = a + ' + ' + b + ' ='; cmCaptcha.value = ''; }
-      document.getElementById('contactBtn').onclick = function() { genCaptcha(); contactModal.classList.add('open'); };
+      document.getElementById('contactBtn').onclick = function() { cmRobot.checked = false; contactModal.classList.add('open'); };
       cmClose.onclick = function() { contactModal.classList.remove('open'); };
       contactModal.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
       cmSubmit.onclick = function() {
-        var name = cmName.value.trim(); var msg = cmMsg.value.trim(); var cap = parseInt(cmCaptcha.value, 10);
+        var name = cmName.value.trim(); var msg = cmMsg.value.trim();
         if (!name || !msg) { toast('Fill in all fields'); return; }
-        if (cap !== ans) { toast('Wrong captcha'); genCaptcha(); return; }
+        if (!cmRobot.checked) { toast('Please confirm you are not a robot'); return; }
         var last = parseInt(localStorage.getItem('msgCooldown') || '0', 10);
         if (Date.now() - last < 60000) { toast('Wait ' + Math.ceil((60000 - (Date.now() - last)) / 1000) + 's before sending again'); return; }
         cmSubmit.disabled = true; cmSubmit.textContent = 'Sending...';
@@ -1649,8 +1655,8 @@
           body: JSON.stringify({ chat_id: '8129791340', text: text })
         }).then(function(r) { return r.json(); }).then(function(d) {
           if (d.ok) { toast('Message sent!'); localStorage.setItem('msgCooldown', Date.now()); cmName.value = ''; cmMsg.value = ''; contactModal.classList.remove('open'); }
-          else { toast('Failed to send'); }
-        }).catch(function() { toast('Network error'); }).finally(function() { cmSubmit.disabled = false; cmSubmit.textContent = 'Send'; });
+          else { toast('Telegram: ' + (d.description || 'unknown error') + '. Make sure you started the bot first.'); }
+        }).catch(function() { toast('Network error - check console'); }).finally(function() { cmSubmit.disabled = false; cmSubmit.textContent = 'Send'; });
       };
     });
 
@@ -1699,8 +1705,11 @@
       <label>Message:</label>
       <textarea id="cmMsg" placeholder="Write something..." maxlength="1000"></textarea>
       <div class="cm-captcha">
-        <span id="cmCaptchaQ"></span>
-        <input type="text" id="cmCaptcha" placeholder="?" maxlength="4">
+        <label class="cm-check">
+          <input type="checkbox" id="cmRobot">
+          <span class="cm-checkmark"></span>
+          <span style="font-size:12px;color:#9ca3af">I'm not a robot</span>
+        </label>
       </div>
       <button class="cm-submit" id="cmSubmit">Send</button>
     </div>
