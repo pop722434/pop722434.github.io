@@ -1567,6 +1567,20 @@
       }
       charAnim(document.querySelector('.footer'), ':3', 60);
       renderPlaylist();
+      var vcEl = document.getElementById('visitorCount');
+      if (vcEl) {
+        var localCount = parseInt(localStorage.getItem('visitorLocal') || '0', 10);
+        var visited = localStorage.getItem('visited');
+        if (!visited) { localCount++; localStorage.setItem('visitorLocal', localCount); localStorage.setItem('visited', '1'); }
+        vcEl.textContent = '👤 ' + localCount + ' unique';
+        fetch('https://api.countapi.xyz/' + (visited ? 'get' : 'hit') + '/pop722434.github.io/visitors')
+          .then(function(r) { return r.json(); })
+          .then(function(d) {
+            var n = d.value;
+            if (n > localCount) { localStorage.setItem('visitorLocal', n); vcEl.textContent = '👤 ' + n + ' unique'; }
+          })
+          .catch(function(e) { console.log('Visitor API unavailable, using local count'); });
+      }
     });
 
     var observer = new IntersectionObserver(function(entries) {
@@ -1603,18 +1617,6 @@
     window.addEventListener('beforeunload', saveState);
     restoreState();
     populateHelpModal();
-    var vcEl = document.getElementById('visitorCount');
-    var localCount = parseInt(localStorage.getItem('visitorLocal') || '0', 10);
-    var visited = localStorage.getItem('visited');
-    if (!visited) { localCount++; localStorage.setItem('visitorLocal', localCount); localStorage.setItem('visited', '1'); }
-    vcEl.textContent = '👤 ' + localCount + ' unique';
-    fetch('https://api.countapi.xyz/' + (visited ? 'get' : 'hit') + '/pop722434.github.io/visitors')
-      .then(function(r) { return r.json(); })
-      .then(function(d) {
-        var n = d.value;
-        if (n > localCount) { localStorage.setItem('visitorLocal', n); vcEl.textContent = '👤 ' + n + ' unique'; }
-      })
-      .catch(function(e) { console.log('Visitor API unavailable, using local count'); });
   </script>
   <div id="keybindsHint"><span>Space</span> play/pause &nbsp; <span>N/P</span> next/prev &nbsp; <span>L</span> lyrics &nbsp; <span>M</span> mute &nbsp; <span>S</span> shuffle &nbsp; <span>R</span> repeat &nbsp; <span>F</span> fullviz &nbsp; <span>`</span> help</div>
   <div class="spacer"></div>
