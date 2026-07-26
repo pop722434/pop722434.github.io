@@ -367,11 +367,43 @@
     .lyrics-loading, .lyrics-error { text-align: center; padding: 60px 0; font-size: 13px; }
     .lyrics-loading { color: #6b7280; }
     .lyrics-error { color: #f85149; }
+    #toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 9999; pointer-events: none;
+    }
+    #toast div {
+      background: rgba(10,12,18,0.9); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 10px 20px; font-size: 13px; color: #e6edf3;
+      backdrop-filter: blur(12px); margin-top: 8px;
+      animation: toastIn 0.3s ease, toastOut 0.3s ease 2.5s forwards;
+      pointer-events: auto;
+    }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-8px); } }
+    #ctxMenu {
+      position: fixed; z-index: 1001; display: none;
+      background: rgba(10,12,18,0.95); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px; padding: 4px; backdrop-filter: blur(16px);
+      min-width: 140px; overflow: hidden;
+    }
+    #ctxMenu div {
+      padding: 8px 14px; font-size: 12px; color: #9ca3af; cursor: pointer;
+      border-radius: 6px; transition: all 0.15s;
+    }
+    #ctxMenu div:hover { background: rgba(255,255,255,0.08); color: #e6edf3; }
+    #glow {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: -1; opacity: 0.12;
+      transition: opacity 0.6s ease;
+    }
   </style>
 </head>
 <body>
   <canvas id="bgViz" class="bg-viz"></canvas>
+  <canvas id="glow"></canvas>
   <canvas id="particles"></canvas>
+  <div id="toast"></div>
+  <div id="ctxMenu"></div>
   <div id="loader">
     <div class="bar"><div class="bar-inner" id="loadBar"></div></div>
     <div class="text">Loading...</div>
@@ -392,7 +424,7 @@
       <button id="nextBtn" title="Next">⏭</button>
       <button id="shuffleBtn" class="shuffle-btn" title="Shuffle">🔀</button>
       <button id="repeatBtn" class="repeat-btn" title="Repeat">🔁</button>
-      <span style="color:#6b7280;font-size:11px;font-weight:300">Vol</span>
+      <span id="volLabel" style="color:#6b7280;font-size:11px;font-weight:300;cursor:pointer">Vol</span>
       <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
       <button id="downloadBtn" title="Download">⬇</button>
       <button id="lyricsToggle" class="lyrics-btn" title="Lyrics">🎤</button>
@@ -401,7 +433,7 @@
     <div class="viz" id="viz"></div>
     <div class="progress-wrap" id="progressWrap">
       <span class="time-current" id="timeCurrent">0:00</span>
-      <div class="progress-bar" id="progressBar"><div class="progress-bar-fill" id="progressFill"></div></div>
+      <div class="progress-bar" id="progressBar"><canvas id="wfCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none"></canvas><div class="progress-bar-fill" id="progressFill"></div></div>
       <span class="time-total" id="timeTotal">0:00</span>
     </div>
     <audio preload="none"></audio>
@@ -639,6 +671,9 @@
       songArtistEl.textContent = track.artist;
       if (track.art && img) { img.src = track.art; img.style.display = ''; }
       audio.load();
+      toast(track.title + ' — ' + track.artist);
+      updateGlow();
+      loadWaveform(idx);
       if (autoplay) {
         audio.play().then(function() {
           img.classList.add('spinning');
@@ -916,7 +951,11 @@
     };
     audio.addEventListener('play', function() { renderPlaylist(); });
     audio.addEventListener('pause', function() { renderPlaylist(); });
-    volumeSlider.oninput = function() { audio.volume = volumeSlider.value; };
+    var volLabel = document.getElementById('volLabel');
+    var prevVol = 1;
+    volumeSlider.oninput = function() { audio.volume = volumeSlider.value; if (+volumeSlider.value > 0) prevVol = +volumeSlider.value; };
+    volLabel.onclick = function() { if (audio.volume > 0) { prevVol = audio.volume; audio.volume = 0; volumeSlider.value = 0; volLabel.textContent = 'Mute'; } else { audio.volume = prevVol; volumeSlider.value = prevVol; volLabel.textContent = 'Vol'; } };
+    volumeSlider.addEventListener('input', function() { if (+volumeSlider.value > 0) volLabel.textContent = 'Vol'; else volLabel.textContent = 'Mute'; });
     var downloadBtn = document.getElementById('downloadBtn');
     downloadBtn.onclick = function() {
       var track = playlistData[currentTrack];
@@ -929,11 +968,94 @@
       a.click();
       setTimeout(function() { document.body.removeChild(a); }, 100);
     };
+    function toast(msg) {
+      var el = document.createElement('div'); el.textContent = msg;
+      var c = document.getElementById('toast'); c.appendChild(el);
+      setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 3000);
+    }
+    var glowCanvas = document.getElementById('glow');
+    var glowCtx = glowCanvas.getContext('2d');
+    function updateGlow() {
+      var track = playlistData[currentTrack];
+      if (!track || !track.art) { glowCanvas.style.opacity = '0'; return; }
+      var img2 = new Image(); img2.crossOrigin = 'anonymous';
+      img2.onload = function() {
+        glowCanvas.width = window.innerWidth; glowCanvas.height = window.innerHeight;
+        var sx = Math.max(0, img2.width / 2 - 50), sy = Math.max(0, img2.height / 2 - 50);
+        var sw = Math.min(100, img2.width), sh = Math.min(100, img2.height);
+        var c2 = document.createElement('canvas'); c2.width = 1; c2.height = 1;
+        var c2x = c2.getContext('2d');
+        c2x.drawImage(img2, sx, sy, sw, sh, 0, 0, 1, 1);
+        var pd = c2x.getImageData(0, 0, 1, 1).data;
+        var grad = glowCtx.createRadialGradient(glowCanvas.width/2, glowCanvas.height/2, 0, glowCanvas.width/2, glowCanvas.height/2, glowCanvas.width*0.4);
+        grad.addColorStop(0, 'rgba(' + pd[0] + ',' + pd[1] + ',' + pd[2] + ',0.3)');
+        grad.addColorStop(0.5, 'rgba(' + pd[0] + ',' + pd[1] + ',' + pd[2] + ',0.08)');
+        grad.addColorStop(1, 'transparent');
+        glowCtx.fillStyle = grad; glowCtx.fillRect(0, 0, glowCanvas.width, glowCanvas.height);
+        glowCanvas.style.opacity = '1';
+      };
+      img2.src = track.art;
+    }
+    var ctxMenu = document.getElementById('ctxMenu');
+    document.addEventListener('click', function() { ctxMenu.style.display = 'none'; });
+    function showCtxMenu(e, idx) {
+      e.preventDefault(); e.stopPropagation();
+      ctxMenu.style.display = ''; ctxMenu.style.left = e.clientX + 'px'; ctxMenu.style.top = e.clientY + 'px';
+      ctxMenu.innerHTML = '<div data-act="play-next">Play Next</div><div data-act="remove">Remove</div>';
+      ctxMenu.onclick = function(ev) {
+        var act = ev.target.getAttribute('data-act'); if (!act) return;
+        ctxMenu.style.display = 'none';
+        if (act === 'remove') { playlistData.splice(idx, 1); if (idx <= currentTrack && currentTrack > 0) currentTrack--; renderPlaylist(); toast('Removed from playlist'); }
+        if (act === 'play-next') { var t = playlistData.splice(idx, 1)[0]; var ni = currentTrack + 1; if (ni > playlistData.length) ni = playlistData.length; playlistData.splice(ni, 0, t); if (idx < currentTrack) currentTrack--; renderPlaylist(); toast('Moved to play next'); }
+      };
+    }
+    var waveformData = null;
+    function loadWaveform(idx) {
+      var track = playlistData[idx]; if (!track) return;
+      var tmpAudio = new Audio(); tmpAudio.preload = 'auto';
+      tmpAudio.onloadeddata = function() {
+        try {
+          var ctx2 = new (window.OfflineAudioContext || window.webkitOfflineAudioContext)(1, tmpAudio.duration * 44100, 44100);
+          var src2 = ctx2.createMediaElementSource(tmpAudio);
+          var ana2 = ctx2.createAnalyser(); ana2.fftSize = 2048;
+          src2.connect(ana2); ana2.connect(ctx2.destination);
+          var samples = Math.floor(tmpAudio.duration * 20);
+          waveformData = new Float32Array(samples);
+          var fi = 0;
+          ctx2.oncomplete = function(e) {
+            var buf = e.renderedBuffer.getChannelData(0);
+            var step = Math.floor(buf.length / samples);
+            for (var i = 0; i < samples; i++) { var sum = 0; for (var j = 0; j < step; j++) sum += Math.abs(buf[i * step + j] || 0); waveformData[i] = sum / step; }
+            drawWaveform();
+          };
+          ctx2.startRendering();
+        } catch(e) {}
+        tmpAudio = null;
+      };
+      tmpAudio.src = track.src;
+    }
     var progressFill = document.getElementById('progressFill');
     var timeCurrent = document.getElementById('timeCurrent');
     var timeTotal = document.getElementById('timeTotal');
     var progressBar = document.getElementById('progressBar');
-    audio.addEventListener('loadedmetadata', function() { timeTotal.textContent = formatTime(audio.duration); });
+    var wfCanvas = document.getElementById('wfCanvas');
+    var wfCtx = wfCanvas.getContext('2d');
+    function drawWaveform() {
+      var w = progressBar.offsetWidth, h = progressBar.offsetHeight;
+      if (w === 0) return;
+      wfCanvas.width = w; wfCanvas.height = h;
+      wfCtx.clearRect(0, 0, w, h);
+      if (!waveformData) return;
+      var step = Math.max(1, Math.floor(waveformData.length / w));
+      var mid = h / 2;
+      wfCtx.fillStyle = 'rgba(255,255,255,0.08)';
+      for (var i = 0; i < w && i * step < waveformData.length; i++) {
+        var val = waveformData[i * step] || 0;
+        var barH = Math.max(1, val * h * 1.5);
+        wfCtx.fillRect(i, mid - barH / 2, 1, barH);
+      }
+    }
+    audio.addEventListener('loadedmetadata', function() { timeTotal.textContent = formatTime(audio.duration); drawWaveform(); });
     audio.addEventListener('timeupdate', function() {
       var pct = (audio.currentTime / audio.duration) * 100 || 0;
       progressFill.style.width = pct + '%';
@@ -943,6 +1065,7 @@
       var rect = progressBar.getBoundingClientRect();
       audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
     });
+    window.addEventListener('resize', drawWaveform);
     var playlistBadge = document.getElementById('playlistBadge');
 
     var scrollTimer;
@@ -1060,6 +1183,7 @@
         } else {
           item.onclick = function(idx) { return function() { loadTrack(idx, true); }; }(realIdx);
         }
+        item.addEventListener('contextmenu', function(idx) { return function(e) { showCtxMenu(e, idx); }; }(realIdx));
         playlistPanel.appendChild(item);
       }
       for (var j = 0; j < filtered.length; j++) {
@@ -1245,6 +1369,16 @@
       entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
     }, { rootMargin: '0px 0px -60px 0px' });
     document.querySelectorAll('.panel').forEach(function(p) { observer.observe(p); });
+    function saveState() {
+      try { localStorage.setItem('playlistData', JSON.stringify(playlistData.map(function(t){ return {title:t.title,artist:t.artist,src:t.src,art:t.art,lang:t.lang,warn:t.warn,lyrics:t.lyrics,lyricsLRC:t.lyricsLRC,lyricsKaraoke:t.lyricsKaraoke}; }))); } catch(e) {}
+      try { localStorage.setItem('volume', volumeSlider.value); } catch(e) {}
+    }
+    function restoreState() {
+      try { var v = localStorage.getItem('volume'); if (v) { volumeSlider.value = v; audio.volume = +v; } } catch(e) {}
+    }
+    setInterval(saveState, 5000);
+    window.addEventListener('beforeunload', saveState);
+    restoreState();
   </script>
   <div class="spacer"></div>
   <div class="content">
