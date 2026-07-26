@@ -353,6 +353,10 @@
     .lyrics-instr span:nth-child(2) { animation-delay: 0.25s; }
     .lyrics-instr span:nth-child(3) { animation-delay: 0.5s; }
     @keyframes instrPulse { 0%, 100% { opacity: 0.15; transform: scale(0.5); } 50% { opacity: 0.7; transform: scale(1); } }
+    .lyrics-line .lyr-word { transition: color 0.25s ease; }
+    .lyrics-line .lyr-word.past { color: rgba(255,255,255,0.85); }
+    .lyrics-line .lyr-word.active { background: linear-gradient(to right, #fff var(--fill,0%), rgba(255,255,255,0.2) var(--fill,0%)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .lyrics-line .lyr-word.future { color: #484f58; }
     .lyrics-loading, .lyrics-error { text-align: center; padding: 60px 0; font-size: 13px; }
     .lyrics-loading { color: #6b7280; }
     .lyrics-error { color: #f85149; }
@@ -503,62 +507,45 @@ We had seasons in the sun
 But the stars that we reached
 Were just starfish on the beach` },
       { title: 'Take Me Out', artist: 'Franz Ferdinand', src: 'Take Me Out.mp3', art: 'takemeout.jpg', lang: 'eng',
-        lyricsLRC: `[00:05.83]So if you're lonely
-[00:08.33]You know I'm here waiting for you
-[00:12.36]I'm just a cross-hair
-[00:15.62]I'm just a shot away from you
-[00:19.14]And if you leave here
-[00:22.15]You leave me broken, shattered I lie
-[00:25.66]I'm just a cross-hair
-[00:28.91]I'm just a shot, then we can die
-[00:33.45]Ah-ah-ah
-[00:40.48]I know I won't be leaving here
-[00:46.50]With you
-[00:55.00]
-[01:05.00]
-[01:15.00]
-[01:22.17]I say, "Don't you know?"
-[01:24.43]You say, "You don't know"
-[01:26.95]I say
-[01:29.96]"Take me out"
-[01:31.47]I say, "You don't show"
-[01:33.97]Don't move, time is slow
-[01:35.98]I say
-[01:39.25]"Take me out"
-[01:49.81]I say, "You don't know"
-[01:52.06]You say, "You don't know"
-[01:54.33]I say
-[01:57.59]"Take me out"
-[01:59.10]If I move, this could die
-[02:01.11]If eyes move, this could die
-[02:03.61]I want you
-[02:06.62]To take me out
-[02:10.00]
-[02:12.64]I know, I won't be leaving here (with you)
-[02:16.65]Oh, I know I won't be leaving here
-[02:21.19]I know, I won't be leaving here (with you)
-[02:25.70]I know, I won't be leaving here
-[02:29.46]With you
-[02:35.00]
-[02:39.50]I say, "Don't you know?"
-[02:42.02]You say, "You don't know"
-[02:44.28]I say
-[02:47.55]"Take me out"
-[02:49.32]If I wane, this could die
-[02:51.34]If I wait, this could die
-[02:53.61]I want you
-[02:56.37]To take me out
-[02:58.13]If I move, this could die
-[03:00.39]Eyes move, this can die
-[03:02.65]Come on
-[03:05.90]Take me out
-[03:10.00]
-[03:15.00]
-[03:20.98]I know, I won't be leaving here (with you)
-[03:25.50]Oh, I know I won't be leaving here
-[03:29.75]I know, I won't be leaving here (with you)
-[03:34.01]I know, I won't be leaving here
-[03:38.52]With you` },
+        lyricsKaraoke: `[00:05.50]<00:05.50>So <00:06.13>if <00:06.52>you're <00:06.73>lonely
+[00:08.80]<00:08.80>You <00:09.31>know <00:09.76>I'm <00:10.30>here <00:11.14>waiting <00:11.53>for <00:11.71>you
+[00:12.46]<00:12.46>I'm <00:12.82>just <00:13.33>a <00:13.42>cross <00:13.93>- <00:14.23>hair
+[00:15.76]<00:15.76>I'm <00:16.18>just <00:16.72>a <00:16.93>shot <00:17.80>away <00:18.28>from <00:18.55>you
+[00:19.24]<00:19.24>And <00:19.66>if <00:19.87>you <00:20.17>leave <00:20.68>here
+[00:22.51]<00:22.51>You <00:22.99>leave <00:23.44>me <00:23.80>broken <00:24.58>, <00:24.58>shattered <00:25.18>I <00:25.30>lie
+[00:26.02]<00:26.02>I'm <00:26.35>just <00:26.86>a <00:26.92>cross <00:27.46>- <00:27.76>hair
+[00:29.26]<00:29.26>I'm <00:29.68>just <00:30.22>a <00:30.40>shot <00:31.42>, <00:31.42>then <00:31.63>we <00:31.75>can <00:32.02>die
+[00:33.31]<00:33.31>Aaahhh <00:33.40>. <00:33.40>. <00:33.40>. <00:33.40>.
+[00:41.56]<00:41.56>I <00:41.59>know <00:42.49>I <00:43.24>won't <00:43.66>be <00:43.96>leaving <00:44.68>here <00:46.12>. <00:46.20>. <00:46.28>. <00:46.36>with <00:47.38>you
+[01:22.84]<01:22.84>I <01:23.14>say <01:23.71>don't <01:24.10>you <01:24.22>know
+[01:25.06]<01:25.06>You <01:25.36>say <01:26.02>you <01:26.17>don't <01:26.50>know
+[01:32.17]<01:32.17>I <01:32.27>say <01:32.36>. <01:32.46>. <01:32.56>. <01:32.66>take <01:32.75>me <01:32.85>out
+[01:32.95]<01:32.95>I <01:33.14>stay <01:33.33>, <01:33.52>you <01:33.71>don't <01:33.90>show
+[01:34.27]<01:34.27>Don't <01:34.66>move <01:35.20>, <01:35.20>time <01:35.62>is <01:35.71>slow
+[01:36.64]<01:36.64>I <01:36.88>say <01:37.63>. <01:38.34>. <01:39.05>. <01:39.76>take <01:40.48>me <01:40.84>out <01:41.68>. <01:44.56>. <01:47.44>.
+[01:50.32]<01:50.32>I <01:50.65>say <01:51.31>you <01:51.49>don't <01:51.73>know
+[01:52.63]<01:52.63>You <01:52.93>say <01:53.65>you <01:53.71>don't <01:54.01>go
+[01:54.97]<01:54.97>I <01:55.21>say <01:56.02>. <01:56.70>. <01:57.38>. <01:58.06>take <01:58.75>me <01:59.11>out
+[01:59.59]<01:59.59>If <01:59.71>I <01:59.92>move <02:00.49>, <02:00.49>this <02:00.76>could <02:00.91>die
+[02:01.54]<02:01.54>If <02:01.84>eyes <02:02.29>move <02:02.80>, <02:02.80>this <02:03.07>could <02:03.22>die
+[02:04.21]<02:04.21>I <02:04.48>want <02:05.14>you <02:06.64>. <02:06.77>. <02:06.90>. <02:07.03>to <02:07.27>take <02:07.96>me <02:08.32>out
+[02:13.09]<02:13.09>I <02:13.72>know <02:14.35>I <02:14.89>won't <02:15.13>be <02:15.34>leaving <02:15.82>here <02:16.09>（ <02:17.02>with <02:17.47>you <02:17.74>）
+[02:17.74]<02:17.74>I <02:18.19>know <02:18.79>I <02:19.30>won't <02:19.57>be <02:19.78>leaving <02:20.26>here
+[02:22.03]<02:22.03>I <02:22.63>know <02:23.20>I <02:23.77>won't <02:24.04>be <02:24.22>leaving <02:24.70>here <02:25.51>（ <02:25.99>with <02:26.35>you <02:26.50>）
+[02:26.53]<02:26.53>I <02:27.10>know <02:27.73>I <02:28.24>won't <02:28.48>be <02:28.66>leaving <02:29.17>here <02:30.37>with <02:31.03>you
+[02:40.33]<02:40.33>I <02:40.66>say <02:41.26>don't <02:41.68>you <02:41.80>know
+[02:42.73]<02:42.73>You <02:43.00>say <02:43.69>you <02:43.81>don't <02:44.11>know
+[02:45.10]<02:45.10>I <02:45.37>say <02:46.15>. <02:46.82>. <02:47.49>. <02:48.16>take <02:48.88>me <02:49.27>out
+[02:49.72]<02:49.72>If <02:49.78>I <02:49.99>wait <02:50.68>, <02:50.68>this <02:50.89>could <02:51.07>die
+[02:51.76]<02:51.76>If <02:52.06>I <02:52.33>wane <02:52.93>, <02:52.96>this <02:53.23>could <02:53.38>die
+[02:54.37]<02:54.37>I <02:54.64>want <02:55.27>you <02:56.83>. <02:56.95>. <02:57.07>. <02:57.19>to <02:57.43>take <02:58.12>me <02:58.51>out
+[02:58.93]<02:58.93>If <02:59.02>I <02:59.23>move <02:59.86>, <02:59.86>this <03:00.13>could <03:00.28>die
+[03:01.03]<03:01.03>If <03:01.33>eyes <03:01.69>move <03:02.26>, <03:02.26>this <03:02.50>could <03:02.65>die
+[03:03.58]<03:03.58>Come <03:03.88>on <03:06.07>. <03:06.28>. <03:06.49>. <03:06.70>take <03:07.42>me <03:07.75>out
+[03:21.79]<03:21.79>I <03:22.42>know <03:23.05>I <03:23.56>won't <03:23.80>be <03:24.01>leaving <03:24.49>here <03:24.70>（ <03:27.97>with <03:28.66>you <03:28.78>）
+[03:30.73]<03:30.73>I <03:31.30>know <03:31.90>I <03:32.44>won't <03:32.71>be <03:32.92>leaving <03:33.40>here
+[03:33.76]<03:33.76>I <03:33.91>know <03:34.05>I <03:34.20>won't <03:34.35>be <03:34.49>leaving <03:34.64>here <03:34.79>（ <03:34.94>with <03:35.08>you <03:35.23>）
+[03:35.38]<03:35.38>I <03:35.80>know <03:36.37>I <03:36.91>won't <03:37.15>be <03:37.30>leaving <03:37.90>here <03:39.07>with <03:39.73>you` },
       { title: 'Territorial Pissings', artist: 'Nirvana', src: 'Territorial Pissings - Live At The Paramount1991.mp3', art: 'territorial.jpg', warn: 'LOUD', lang: 'eng',
         lyricsLRC: `[00:00.35] Come on people now
 [00:01.18] Smile on your brother
@@ -684,12 +671,31 @@ Were just starfish on the beach` },
       }
       return result.sort(function(a,b){return a.time-b.time;});
     }
+    function parseKaraokeLRC(lrc) {
+      var lines = lrc.split('\n'); var result = [];
+      for (var i = 0; i < lines.length; i++) {
+        var m = lines[i].match(/^\[(\d+):(\d+[\.:]\d+)\](.*)/);
+        if (!m) continue;
+        var lineStart = parseInt(m[1]) * 60 + parseFloat(m[2].replace(':','.'));
+        var textPart = m[3]; var words = [];
+        var wre = /<(\d+):(\d+[\.:]\d+)>([^<]*)/g; var wm;
+        while ((wm = wre.exec(textPart)) !== null) {
+          var wt = parseInt(wm[1]) * 60 + parseFloat(wm[2].replace(':','.'));
+          words.push({ word: wm[3], start: wt });
+        }
+        if (words.length > 0) { result.push({ lineStart: lineStart, words: words }); }
+        else if (textPart.trim()) { result.push({ lineStart: lineStart, words: [{ word: textPart.trim(), start: lineStart }] }); }
+        else { result.push({ lineStart: lineStart, words: [] }); }
+      }
+      return result;
+    }
     function fetchLyrics(idx) {
       if (lyricsCache[idx]) { renderLyrics(lyricsCache[idx]); return; }
       var track = playlistData[idx];
       if (!track) return;
-      if (track.lyricsLRC || track.lyrics) {
-        if (track.lyricsLRC) { currentLyrics = parseLRC(track.lyricsLRC); }
+      if (track.lyricsKaraoke || track.lyricsLRC || track.lyrics) {
+        if (track.lyricsKaraoke) { currentLyrics = parseKaraokeLRC(track.lyricsKaraoke); }
+        else if (track.lyricsLRC) { currentLyrics = parseLRC(track.lyricsLRC); }
         else { currentLyrics = track.lyrics.split('\n').map(function(l){ return { time: -1, text: l.trim() }; }); }
         lyricsCache[idx] = currentLyrics;
         renderLyrics(currentLyrics);
@@ -704,25 +710,91 @@ Were just starfish on the beach` },
       var html = '<button class="lyrics-close" id="lyricsClose">✕</button>';
       html += '<div class="lyrics-header">' + artHtml + '<div><div class="lh-title">' + (track ? escapeHtml(track.title) : '') + '</div><div class="lh-artist">' + (track ? escapeHtml(track.artist) : '') + '</div></div></div>';
       html += '<div class="lyrics-body">';
+      var isKaraoke = lyrics.length > 0 && lyrics[0].words !== undefined;
       for (var i = 0; i < lyrics.length; i++) {
-        if (!lyrics[i].text) { html += '<div class="lyrics-instr"><span></span><span></span><span></span></div>'; continue; }
-        html += '<div class="lyrics-line' + (lyrics[i].time < 0 ? ' no-sync' : '') + '" data-lyr="' + i + '">' + escapeHtml(lyrics[i].text) + '</div>';
+        if (isKaraoke) {
+          var wds = lyrics[i].words;
+          if (!wds || wds.length === 0) { html += '<div class="lyrics-instr"><span></span><span></span><span></span></div>'; continue; }
+          var wordHtml = '';
+          for (var w = 0; w < wds.length; w++) {
+            if (w > 0) wordHtml += ' ';
+            wordHtml += '<span class="lyr-word" data-wi="' + i + '-' + w + '">' + escapeHtml(wds[w].word) + '</span>';
+          }
+          html += '<div class="lyrics-line" data-lyr="' + i + '">' + wordHtml + '</div>';
+        } else {
+          if (!lyrics[i].text) { html += '<div class="lyrics-instr"><span></span><span></span><span></span></div>'; continue; }
+          html += '<div class="lyrics-line' + (lyrics[i].time < 0 ? ' no-sync' : '') + '" data-lyr="' + i + '">' + escapeHtml(lyrics[i].text) + '</div>';
+        }
       }
       html += '</div>';
       lyricsPanel.innerHTML = html;
       document.getElementById('lyricsClose').onclick = function() { closeLyrics(); };
-      if (currentLyrics && currentLyrics.length > 0 && currentLyrics[0].time >= 0) syncLyrics();
+      if (currentLyrics && currentLyrics.length > 0 && (currentLyrics[0].time >= 0 || currentLyrics[0].lineStart !== undefined)) syncLyrics();
     }
     function escapeHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     function syncLyrics() {
-      if (!currentLyrics || currentLyrics.length === 0 || currentLyrics[0].time < 0) return;
+      if (!currentLyrics || currentLyrics.length === 0) return;
+      var isKaraoke = currentLyrics[0].words !== undefined;
+      if (!isKaraoke && currentLyrics[0].time < 0) return;
       var ct = audio.currentTime;
+      var body = lyricsPanel.querySelector('.lyrics-body');
+      if (!body) return;
+
+      if (isKaraoke) {
+        var lineIdx = -1;
+        for (var i = currentLyrics.length - 1; i >= 0; i--) {
+          if (currentLyrics[i].lineStart >= 0 && ct >= currentLyrics[i].lineStart) { lineIdx = i; break; }
+        }
+        var lChanged = lineIdx !== currentLineIdx;
+        currentLineIdx = lineIdx;
+        if (lChanged) {
+          var allLines = body.querySelectorAll('.lyrics-line');
+          for (var i = 0; i < allLines.length; i++) { allLines[i].classList.remove('active', 'past'); }
+          var allWords = body.querySelectorAll('.lyr-word');
+          for (var i = 0; i < allWords.length; i++) { allWords[i].className = 'lyr-word'; allWords[i].style.setProperty('--fill','0%'); allWords[i].style.background = ''; allWords[i].style.setProperty('-webkit-background-clip',''); allWords[i].style.setProperty('-webkit-text-fill-color',''); }
+        }
+        if (lineIdx >= 0) {
+          var line = currentLyrics[lineIdx];
+          var wordIdx = -1;
+          for (var w = line.words.length - 1; w >= 0; w--) {
+            if (ct >= line.words[w].start) { wordIdx = w; break; }
+          }
+          var lineEl = body.querySelector('[data-lyr="' + lineIdx + '"]');
+          if (lineEl) lineEl.classList.add('active');
+          for (var pi = 0; pi < lineIdx; pi++) {
+            if (currentLyrics[pi] && currentLyrics[pi].words && currentLyrics[pi].words.length > 0) {
+              var pel = body.querySelector('[data-lyr="' + pi + '"]');
+              if (pel) pel.classList.add('past');
+              for (var pw = 0; pw < currentLyrics[pi].words.length; pw++) {
+                var pwel = body.querySelector('[data-wi="' + pi + '-' + pw + '"]');
+                if (pwel) pwel.className = 'lyr-word past';
+              }
+            }
+          }
+          for (var w = 0; w < line.words.length; w++) {
+            var wel = body.querySelector('[data-wi="' + lineIdx + '-' + w + '"]');
+            if (!wel) continue;
+            if (w < wordIdx) { wel.className = 'lyr-word past'; }
+            else if (w === wordIdx) {
+              var wStart = line.words[w].start;
+              var wEnd = (w + 1 < line.words.length) ? line.words[w + 1].start : ((lineIdx + 1 < currentLyrics.length && currentLyrics[lineIdx + 1].lineStart > line.lineStart) ? currentLyrics[lineIdx + 1].lineStart : wStart + 2);
+              var pct = Math.min(1, Math.max(0, (ct - wStart) / (wEnd - wStart))) * 100;
+              wel.className = 'lyr-word active';
+              wel.style.setProperty('--fill', pct + '%');
+              wel.style.background = 'linear-gradient(to right, #fff ' + pct + '%, rgba(255,255,255,0.2) ' + pct + '%)';
+              wel.style.setProperty('-webkit-background-clip', 'text');
+              wel.style.setProperty('-webkit-text-fill-color', 'transparent');
+            } else { wel.className = 'lyr-word future'; }
+          }
+          if (lChanged && lineEl) lineEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+        return;
+      }
+
       var idx = -1;
       for (var i = currentLyrics.length - 1; i >= 0; i--) {
         if (currentLyrics[i].time >= 0 && ct >= currentLyrics[i].time) { idx = i; break; }
       }
-      var body = lyricsPanel.querySelector('.lyrics-body');
-      if (!body) return;
       var lineChanged = idx !== currentLineIdx;
       if (lineChanged) {
         currentLineIdx = idx;
