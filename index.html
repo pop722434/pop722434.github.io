@@ -133,7 +133,7 @@
     .music-player.mini .viz { display: none; }
     .music-player.mini .progress-wrap { display: none; }
     .music-player.mini #shuffleBtn, .music-player.mini #repeatBtn,
-    .music-player.mini #speedBtn, .music-player.mini #vizModeBtn,
+    .music-player.mini #speedBtn, .music-player.mini #vizModeBtn, .music-player.mini #eqBtn,
     .music-player.mini .controls span { display: none; }
     .music-player.mini input[type="range"] { display: none; }
     .playlist-btn { position: relative; }
@@ -438,12 +438,25 @@
     }
     #helpModal .hm-box td:last-child { color: #e6edf3; text-align: right; }
     #helpModal .hm-box .hm-hint { color: #484f58; font-size: 11px; text-align: center; margin-top: 14px; }
+    .fs-viz .bg-viz { z-index: 9998; opacity: 1 !important; }
+    .fs-viz .content, .fs-viz .avatar-wrap, .fs-viz .footer,
+    .fs-viz .scroll-hint, .fs-viz .music-player, .fs-viz .bottom-bar { display: none; }
+    .fs-viz .spacer { display: none; }
+    #keybindsHint {
+      position: fixed; bottom: 16px; right: 16px; z-index: 50;
+      font-size: 10px; color: #484f58; font-weight: 300;
+      text-align: right; line-height: 1.6; pointer-events: none;
+      opacity: 0.6; transition: opacity 0.3s;
+    }
+    #keybindsHint:hover { opacity: 1; }
+    #keybindsHint span { display: inline-block; min-width: 20px; color: #6b7280; }
     @media (max-width: 600px) {
       .bottom-bar { padding: 8px 12px; gap: 8px; }
       .bottom-bar .bb-art { width: 28px; height: 28px; }
       .bottom-bar .bb-controls button { padding: 4px 8px; font-size: 11px; }
       .bottom-bar .bb-title { font-size: 12px; }
       .bottom-bar .bb-artist { display: none; }
+      #keybindsHint { display: none; }
     }
   </style>
 </head>
@@ -479,6 +492,7 @@
       <button id="lyricsToggle" class="lyrics-btn" title="Lyrics">🎤</button>
       <button id="speedBtn" title="Playback Speed">1x</button>
       <button id="vizModeBtn" title="Visualizer Mode">〰</button>
+      <button id="eqBtn" title="Equalizer">🎛</button>
       <button class="playlist-btn" id="playlistToggle" title="Playlist">☰<span class="playlist-badge" id="playlistBadge">0</span></button>
     </div>
     <div class="viz" id="viz"></div>
@@ -1032,6 +1046,14 @@
       vizModeBtn.textContent = vizModes[vizModeIdx] === 'circle' ? '◯' : '〰';
       toast('Viz: ' + vizModes[vizModeIdx]);
     };
+    var eqBtn = document.getElementById('eqBtn');
+    eqBtn.onclick = function() {
+      eqIdx = (eqIdx + 1) % eqPresets.length;
+      applyEQ(eqIdx);
+      eqBtn.textContent = eqIdx === 0 ? '🎛' : eqPresets[eqIdx].name.charAt(0);
+      toast('EQ: ' + eqPresets[eqIdx].name);
+    };
+    var fullscreenViz = false;
     var bbBar = document.getElementById('bottomBar');
     var bbArt = document.getElementById('bbArt');
     var bbTitle = document.getElementById('bbTitle');
@@ -1183,10 +1205,15 @@
       progressFill.style.width = pct + '%';
       timeCurrent.textContent = formatTime(audio.currentTime);
     });
-    progressBar.addEventListener('click', function(e) {
+    var seeking = false;
+    function seekTo(e) {
       var rect = progressBar.getBoundingClientRect();
-      audio.currentTime = ((e.clientX - rect.left) / rect.width) * audio.duration;
-    });
+      var x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+      audio.currentTime = (x / rect.width) * audio.duration;
+    }
+    progressBar.addEventListener('mousedown', function(e) { seeking = true; seekTo(e); });
+    document.addEventListener('mousemove', function(e) { if (seeking) seekTo(e); });
+    document.addEventListener('mouseup', function() { seeking = false; });
     window.addEventListener('resize', drawWaveform);
     var playlistBadge = document.getElementById('playlistBadge');
 
@@ -1210,6 +1237,7 @@
         case 'KeyM': e.preventDefault(); volLabel.click(); break;
         case 'KeyS': e.preventDefault(); shuffleBtn.click(); break;
         case 'KeyR': e.preventDefault(); repeatBtn.click(); break;
+        case 'KeyF': e.preventDefault(); fullscreenViz = !fullscreenViz; document.body.classList.toggle('fs-viz', fullscreenViz); toast(fullscreenViz ? 'Fullscreen viz on' : 'Fullscreen viz off'); break;
         case 'Slash': if (!e.target.closest('#playlistSearch')) { e.preventDefault(); var ps = document.getElementById('playlistSearch'); if (ps) ps.focus(); } break;
         case 'Escape': e.preventDefault(); 
           if (document.getElementById('helpModal').classList.contains('open')) document.getElementById('helpModal').classList.remove('open');
@@ -1355,14 +1383,35 @@
       viz.appendChild(bar);
     }
     var vizBars = viz.children;
-    var audioCtx, analyser, dataArray, src;
+    var audioCtx, analyser, dataArray, src, eqFilters = [];
+    var eqPresets = [
+      { name: 'Flat', gains: [0,0,0,0,0,0,0,0,0,0] },
+      { name: 'Bass Boost', gains: [5,4,3,1,0,-1,-2,-3,-4,-5] },
+      { name: 'Vocal', gains: [-2,-1,1,3,4,4,3,1,-1,-2] },
+      { name: 'Acoustic', gains: [3,2,1,0,1,2,3,2,1,0] },
+    ];
+    var eqIdx = 0;
+    function applyEQ(idx) {
+      var p = eqPresets[idx];
+      if (!p || eqFilters.length === 0) return;
+      for (var i = 0; i < eqFilters.length; i++) {
+        eqFilters[i].gain.value = p.gains[i] || 0;
+      }
+    }
     function initViz() {
       try {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioCtx.createAnalyser();
         analyser.fftSize = 64;
         src = audioCtx.createMediaElementSource(audio);
-        src.connect(analyser);
+        var freqs = [60, 170, 310, 600, 1000, 3000, 6000, 10000, 14000, 20000];
+        for (var fi = 0; fi < freqs.length; fi++) {
+          var f = audioCtx.createBiquadFilter();
+          f.type = 'peaking'; f.frequency.value = freqs[fi]; f.Q.value = 1; f.gain.value = 0;
+          if (eqFilters.length === 0) src.connect(f); else eqFilters[eqFilters.length - 1].connect(f);
+          eqFilters.push(f);
+        }
+        eqFilters[eqFilters.length - 1].connect(analyser);
         analyser.connect(audioCtx.destination);
         dataArray = new Uint8Array(analyser.frequencyBinCount);
         function updateViz() {
@@ -1539,6 +1588,7 @@
         ['M', 'Toggle mute'],
         ['S', 'Toggle shuffle'],
         ['R', 'Cycle repeat'],
+        ['F', 'Fullscreen viz'],
         ['/', 'Focus search'],
         ['Escape', 'Close panels'],
         ['`', 'Toggle help'],
@@ -1554,6 +1604,7 @@
     restoreState();
     populateHelpModal();
   </script>
+  <div id="keybindsHint"><span>Space</span> play/pause &nbsp; <span>N/P</span> next/prev &nbsp; <span>L</span> lyrics &nbsp; <span>M</span> mute &nbsp; <span>S</span> shuffle &nbsp; <span>R</span> repeat &nbsp; <span>F</span> fullviz &nbsp; <span>`</span> help</div>
   <div class="spacer"></div>
   <div class="content">
     <div class="handle"><h1></h1><div class="at"></div></div>
