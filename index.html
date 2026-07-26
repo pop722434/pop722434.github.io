@@ -1268,7 +1268,7 @@
     });
 
     document.addEventListener('keydown', function(e) {
-      if (e.target.tagName === 'INPUT') return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       switch (e.code) {
         case 'Space': e.preventDefault(); if (audio.paused) { playBtn.click(); } else { pauseBtn.click(); } break;
         case 'ArrowLeft': e.preventDefault(); audio.currentTime = Math.max(0, audio.currentTime - 5); break;
@@ -1284,6 +1284,7 @@
         case 'Slash': if (!e.target.closest('#playlistSearch')) { e.preventDefault(); var ps = document.getElementById('playlistSearch'); if (ps) ps.focus(); } break;
         case 'Escape': e.preventDefault(); 
           if (document.getElementById('helpModal').classList.contains('open')) document.getElementById('helpModal').classList.remove('open');
+          else if (document.getElementById('contactModal').classList.contains('open')) document.getElementById('contactModal').classList.remove('open');
           else if (lyricsOpen) closeLyrics();
           else if (playlistPanel.classList.contains('open')) playlistPanel.classList.remove('open');
           break;
