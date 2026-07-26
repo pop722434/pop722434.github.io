@@ -1649,12 +1649,23 @@
       var cmMsg = document.getElementById('cmMsg');
       var cmSubmit = document.getElementById('cmSubmit');
       var cmClose = document.getElementById('cmClose');
-      document.getElementById('contactBtn').onclick = function() { contactModal.classList.add('open'); };
+      document.getElementById('contactBtn').onclick = function() {
+        if (typeof turnstile !== 'undefined') {
+          turnstile.reset();
+          // force re-render in case widget didn't render in hidden modal
+          var widget = document.querySelector('.cf-turnstile');
+          if (widget && !widget.querySelector('iframe')) {
+            turnstile.render(widget);
+          }
+        }
+        contactModal.classList.add('open');
+      };
       cmClose.onclick = function() { contactModal.classList.remove('open'); };
       contactModal.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
       cmSubmit.onclick = function() {
         var name = cmName.value.trim(); var msg = cmMsg.value.trim();
         if (!name || !msg) { toast('Fill in all fields'); return; }
+        if (typeof turnstile === 'undefined') { toast('Captcha not loaded, try again in a moment'); return; }
         var tok = turnstile.getResponse();
         if (!tok) { toast('Please complete the captcha'); return; }
         var last = parseInt(localStorage.getItem('msgCooldown') || '0', 10);
