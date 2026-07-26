@@ -598,7 +598,7 @@
       var searchInput = document.createElement('input');
       searchInput.className = 'playlist-search';
       searchInput.placeholder = 'Search...';
-      searchInput.oninput = function() { renderPlaylist(); };
+      searchInput.oninput = function() { var v = this.value; renderPlaylist(); var ni = playlistPanel.querySelector('.playlist-search'); if (ni) { ni.value = v; ni.focus(); ni.selectionStart = ni.selectionEnd = v.length; } };
       searchInput.onclick = function(e) { e.stopPropagation(); };
       playlistPanel.appendChild(searchInput);
 
