@@ -133,6 +133,7 @@
     .music-player.mini .viz { display: none; }
     .music-player.mini .progress-wrap { display: none; }
     .music-player.mini #shuffleBtn, .music-player.mini #repeatBtn,
+    .music-player.mini #speedBtn, .music-player.mini #vizModeBtn,
     .music-player.mini .controls span { display: none; }
     .music-player.mini input[type="range"] { display: none; }
     .playlist-btn { position: relative; }
@@ -181,7 +182,7 @@
     }
     .viz {
       display: flex; align-items: flex-end; gap: 2px; height: 24px;
-      margin-left: auto;
+      margin-left: auto; position: relative;
     }
     .viz div {
       width: 3px; height: 4px;
@@ -396,6 +397,54 @@
       pointer-events: none; z-index: -1; opacity: 0.12;
       transition: opacity 0.6s ease;
     }
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 99;
+      background: rgba(10,12,18,0.85); backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 10px 20px; display: flex; align-items: center; gap: 12px;
+      opacity: 0; transform: translateY(100%); transition: all 0.4s cubic-bezier(0.22,1,0.36,1);
+    }
+    .bottom-bar.visible { opacity: 1; transform: translateY(0); }
+    .bottom-bar .bb-art { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+    .bottom-bar .bb-info { flex: 1; min-width: 0; }
+    .bottom-bar .bb-title { font-size: 13px; color: #e6edf3; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bottom-bar .bb-artist { font-size: 11px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bottom-bar .bb-controls { display: flex; gap: 8px; align-items: center; }
+    .bottom-bar .bb-controls button {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      color: #d1d5db; border-radius: 8px; padding: 6px 10px;
+      cursor: pointer; font-size: 13px; transition: all 0.2s; line-height: 1;
+    }
+    .bottom-bar .bb-controls button:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); }
+    #speedBtn { font-size: 10px !important; font-weight: 600; padding: 6px 8px !important; min-width: 36px; text-align: center; }
+    #vizModeBtn { font-size: 12px !important; }
+    #helpModal {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10001;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+    }
+    #helpModal.open { display: flex; }
+    #helpModal .hm-box {
+      background: rgba(10,12,18,0.96); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px; padding: 28px 32px; max-width: 400px; width: 90vw;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    }
+    #helpModal .hm-box h2 { font-size: 16px; color: #e6edf3; font-weight: 600; margin-bottom: 16px; }
+    #helpModal .hm-box table { width: 100%; border-collapse: collapse; }
+    #helpModal .hm-box td { padding: 6px 0; font-size: 13px; }
+    #helpModal .hm-box td:first-child {
+      color: #9ca3af; font-weight: 300; width: 40%;
+      font-family: 'Inter', monospace;
+    }
+    #helpModal .hm-box td:last-child { color: #e6edf3; text-align: right; }
+    #helpModal .hm-box .hm-hint { color: #484f58; font-size: 11px; text-align: center; margin-top: 14px; }
+    @media (max-width: 600px) {
+      .bottom-bar { padding: 8px 12px; gap: 8px; }
+      .bottom-bar .bb-art { width: 28px; height: 28px; }
+      .bottom-bar .bb-controls button { padding: 4px 8px; font-size: 11px; }
+      .bottom-bar .bb-title { font-size: 12px; }
+      .bottom-bar .bb-artist { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -428,6 +477,8 @@
       <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
       <button id="downloadBtn" title="Download">⬇</button>
       <button id="lyricsToggle" class="lyrics-btn" title="Lyrics">🎤</button>
+      <button id="speedBtn" title="Playback Speed">1x</button>
+      <button id="vizModeBtn" title="Visualizer Mode">〰</button>
       <button class="playlist-btn" id="playlistToggle" title="Playlist">☰<span class="playlist-badge" id="playlistBadge">0</span></button>
     </div>
     <div class="viz" id="viz"></div>
@@ -440,6 +491,25 @@
   </div>
   <div class="playlist-panel" id="playlistPanel"></div>
   <div class="lyrics-panel" id="lyricsPanel"><div class="lyrics-loading">Loading lyrics...</div></div>
+  <div class="bottom-bar" id="bottomBar">
+    <img class="bb-art" id="bbArt" src="" alt="">
+    <div class="bb-info">
+      <div class="bb-title" id="bbTitle">Seasons In The Sun</div>
+      <div class="bb-artist" id="bbArtist">Nirvana</div>
+    </div>
+    <div class="bb-controls">
+      <button id="bbPrev">⏮</button>
+      <button id="bbPlay">▶</button>
+      <button id="bbNext">⏭</button>
+    </div>
+  </div>
+  <div id="helpModal">
+    <div class="hm-box">
+      <h2>Keyboard Shortcuts</h2>
+      <table><tbody id="hmBody"></tbody></table>
+      <div class="hm-hint">Press <strong>?</strong> again to close</div>
+    </div>
+  </div>
   <script>
     var c = document.getElementById('particles');
     var ctx = c.getContext('2d');
@@ -649,7 +719,7 @@
       if (!track) return;
       if (audio.src && !audio.paused) {
         var vol = audio.volume;
-        var steps = 10;
+        var steps = 5;
         var si = 0;
         var fadeOut = setInterval(function() {
           si++;
@@ -658,7 +728,7 @@
             clearInterval(fadeOut);
             doLoad(idx, autoplay, vol);
           }
-        }, 40);
+        }, 25);
       } else {
         doLoad(idx, autoplay);
       }
@@ -674,17 +744,18 @@
       toast(track.title + ' — ' + track.artist);
       updateGlow();
       loadWaveform(idx);
+      updateBottomBar(track);
       if (autoplay) {
         audio.play().then(function() {
           img.classList.add('spinning');
           if (restoreVol) {
             var si = 0;
-            var steps = 10;
+            var steps = 5;
             var fadeIn = setInterval(function() {
               si++;
               audio.volume = Math.min(restoreVol, (si / steps) * restoreVol);
               if (si >= steps) { clearInterval(fadeIn); audio.volume = restoreVol; }
-            }, 40);
+            }, 25);
           }
         }).catch(function(){});
       } else {
@@ -944,6 +1015,57 @@
       repeatBtn.textContent = icons[idx];
       repeatBtn.className = 'repeat-btn' + (repeatMode !== 'none' ? ' active' : '') + (repeatMode === 'one' ? ' one' : '');
     };
+    var speedBtn = document.getElementById('speedBtn');
+    var speeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
+    var speedIdx = 2;
+    speedBtn.onclick = function() {
+      speedIdx = (speedIdx + 1) % speeds.length;
+      audio.playbackRate = speeds[speedIdx];
+      speedBtn.textContent = speeds[speedIdx] + 'x';
+      toast('Speed: ' + speeds[speedIdx] + 'x');
+    };
+    var vizModes = ['bars', 'circle'];
+    var vizModeIdx = 0;
+    var vizModeBtn = document.getElementById('vizModeBtn');
+    vizModeBtn.onclick = function() {
+      vizModeIdx = (vizModeIdx + 1) % vizModes.length;
+      vizModeBtn.textContent = vizModes[vizModeIdx] === 'circle' ? '◯' : '〰';
+      toast('Viz: ' + vizModes[vizModeIdx]);
+    };
+    var bbBar = document.getElementById('bottomBar');
+    var bbArt = document.getElementById('bbArt');
+    var bbTitle = document.getElementById('bbTitle');
+    var bbArtist = document.getElementById('bbArtist');
+    var bbPlay = document.getElementById('bbPlay');
+    var bbPrev = document.getElementById('bbPrev');
+    var bbNext = document.getElementById('bbNext');
+    bbPlay.onclick = function() { if (audio.paused) audio.play(); else audio.pause(); };
+    bbPrev.onclick = function() { prevBtn.click(); };
+    bbNext.onclick = function() { nextBtn.click(); };
+    audio.addEventListener('play', function() { bbPlay.textContent = '⏸'; renderPlaylist(); });
+    audio.addEventListener('pause', function() { bbPlay.textContent = '▶'; renderPlaylist(); });
+    function updateBottomBar(track) {
+      if (!track) return;
+      bbTitle.textContent = track.title;
+      bbArtist.textContent = track.artist;
+      if (track.art) bbArt.src = track.art;
+    }
+    var isDragging = false;
+    var startX = 0;
+    document.addEventListener('touchstart', function(e) {
+      if (e.target.closest('.music-player') || e.target.closest('.bottom-bar') || e.target.closest('.playlist-panel') || e.target.closest('.lyrics-panel')) return;
+      startX = e.touches[0].clientX;
+      isDragging = true;
+    }, { passive: true });
+    document.addEventListener('touchmove', function(e) {
+      if (!isDragging) return;
+      var dx = e.touches[0].clientX - startX;
+      if (Math.abs(dx) > 60) {
+        isDragging = false;
+        if (dx < 0) nextBtn.click(); else prevBtn.click();
+      }
+    }, { passive: true });
+    document.addEventListener('touchend', function() { isDragging = false; }, { passive: true });
     audio.onended = function() {
       img.classList.remove('spinning');
       var n = getNextTrack();
@@ -1071,8 +1193,8 @@
     var scrollTimer;
     window.addEventListener('scroll', function() {
       clearTimeout(scrollTimer);
-      if (window.scrollY > 200) { player.classList.add('mini'); }
-      else { scrollTimer = setTimeout(function() { player.classList.remove('mini'); }, 200); }
+      if (window.scrollY > 200) { player.classList.add('mini'); bbBar.classList.add('visible'); }
+      else { scrollTimer = setTimeout(function() { player.classList.remove('mini'); bbBar.classList.remove('visible'); }, 200); }
     });
 
     document.addEventListener('keydown', function(e) {
@@ -1083,6 +1205,21 @@
         case 'ArrowRight': e.preventDefault(); audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 5); break;
         case 'ArrowUp': e.preventDefault(); volumeSlider.value = Math.min(1, parseFloat(volumeSlider.value) + 0.1); volumeSlider.oninput(); break;
         case 'ArrowDown': e.preventDefault(); volumeSlider.value = Math.max(0, parseFloat(volumeSlider.value) - 0.1); volumeSlider.oninput(); break;
+        case 'KeyN': case 'KeyP': e.preventDefault(); (e.code === 'KeyN' ? nextBtn : prevBtn).click(); break;
+        case 'KeyL': e.preventDefault(); lyricsToggle.click(); break;
+        case 'KeyM': e.preventDefault(); volLabel.click(); break;
+        case 'KeyS': e.preventDefault(); shuffleBtn.click(); break;
+        case 'KeyR': e.preventDefault(); repeatBtn.click(); break;
+        case 'Slash': if (!e.target.closest('#playlistSearch')) { e.preventDefault(); var ps = document.getElementById('playlistSearch'); if (ps) ps.focus(); } break;
+        case 'Escape': e.preventDefault(); 
+          if (document.getElementById('helpModal').classList.contains('open')) document.getElementById('helpModal').classList.remove('open');
+          else if (lyricsOpen) closeLyrics();
+          else if (playlistPanel.classList.contains('open')) playlistPanel.classList.remove('open');
+          break;
+        case 'Backquote': e.preventDefault();
+          var hm = document.getElementById('helpModal');
+          hm.classList.toggle('open');
+          break;
       }
     });
     function formatTime(s) {
@@ -1231,9 +1368,27 @@
         function updateViz() {
           if (audio.paused || audio.ended) { requestAnimationFrame(updateViz); return; }
           analyser.getByteFrequencyData(dataArray);
-          for (var i = 0; i < vizBars.length; i++) {
-            var val = dataArray[i * 2] / 255;
-            vizBars[i].style.height = Math.max(4, val * 22) + 'px';
+          if (vizModes[vizModeIdx] === 'circle') {
+            var cx = viz.offsetWidth / 2, cy = viz.offsetHeight / 2, r = Math.min(cx, cy) - 6;
+            for (var i = 0; i < vizBars.length; i++) {
+              var val = dataArray[i * 2] / 255;
+              var angle = (i / vizBars.length) * Math.PI * 2 - Math.PI / 2;
+              var dist = r + val * 14;
+              var x = cx + Math.cos(angle) * dist, y = cy + Math.sin(angle) * dist;
+              vizBars[i].style.left = (x - 2) + 'px'; vizBars[i].style.top = (y - 2) + 'px';
+              vizBars[i].style.width = '4px'; vizBars[i].style.height = '4px';
+              vizBars[i].style.borderRadius = '50%';
+              vizBars[i].style.position = 'absolute';
+              vizBars[i].style.background = 'rgba(255,255,255,' + (0.15 + val * 0.6) + ')';
+            }
+          } else {
+            for (var i = 0; i < vizBars.length; i++) {
+              var val = dataArray[i * 2] / 255;
+              vizBars[i].style.height = Math.max(4, val * 22) + 'px';
+              vizBars[i].style.width = ''; vizBars[i].style.borderRadius = '';
+              vizBars[i].style.position = ''; vizBars[i].style.left = ''; vizBars[i].style.top = '';
+              vizBars[i].style.background = '';
+            }
           }
           requestAnimationFrame(updateViz);
         }
@@ -1373,12 +1528,31 @@
       try { localStorage.setItem('playlistData', JSON.stringify(playlistData.map(function(t){ return {title:t.title,artist:t.artist,src:t.src,art:t.art,lang:t.lang,warn:t.warn,lyrics:t.lyrics,lyricsLRC:t.lyricsLRC,lyricsKaraoke:t.lyricsKaraoke}; }))); } catch(e) {}
       try { localStorage.setItem('volume', volumeSlider.value); } catch(e) {}
     }
+    document.getElementById('helpModal').addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+    function populateHelpModal() {
+      var shortcuts = [
+        ['Space', 'Play / Pause'],
+        ['← / →', 'Seek ±5s'],
+        ['↑ / ↓', 'Volume ±0.1'],
+        ['N / P', 'Next / Previous'],
+        ['L', 'Toggle lyrics'],
+        ['M', 'Toggle mute'],
+        ['S', 'Toggle shuffle'],
+        ['R', 'Cycle repeat'],
+        ['/', 'Focus search'],
+        ['Escape', 'Close panels'],
+        ['`', 'Toggle help'],
+      ];
+      document.getElementById('hmBody').innerHTML = shortcuts.map(function(s){ return '<tr><td>' + s[0] + '</td><td>' + s[1] + '</td></tr>'; }).join('');
+    }
     function restoreState() {
       try { var v = localStorage.getItem('volume'); if (v) { volumeSlider.value = v; audio.volume = +v; } } catch(e) {}
+      try { var d = localStorage.getItem('playlistData'); if (d) { var p = JSON.parse(d); if (p && p.length > 0) { playlistData.length = 0; p.forEach(function(t){ playlistData.push(t); }); } } } catch(e) {}
     }
     setInterval(saveState, 5000);
     window.addEventListener('beforeunload', saveState);
     restoreState();
+    populateHelpModal();
   </script>
   <div class="spacer"></div>
   <div class="content">
