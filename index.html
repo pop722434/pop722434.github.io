@@ -509,6 +509,10 @@
       border-radius: 6px; padding: 7px 10px; font-size: 11px; color: #e6edf3;
       font-family: monospace; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
+    .crypto-row .cr-balance {
+      font-size: 11px; color: #9ca3af; font-variant-numeric: tabular-nums;
+      min-width: 90px; text-align: right; flex-shrink: 0;
+    }
     .crypto-row button {
       background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
       color: #d1d5db; border-radius: 6px; padding: 5px 10px; cursor: pointer;
@@ -1681,7 +1685,31 @@
         };
       });
     });
-
+    var addrsData = [
+      { label: 'LTC', addr: 'LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi', api: 'https://api.blockchair.com/litecoin/dashboards/address/' },
+      { label: 'ETH', addr: '0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B', api: 'https://api.etherscan.io/api?module=account&action=balance&address=' + '&tag=latest&apikey=YourApiKeyToken' },
+      { label: 'TRX', addr: 'TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW', api: 'https://apilist.tronscan.org/api/account?address=' },
+      { label: 'BTC', addr: 'bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs', api: 'https://blockchain.info/q/addressbalance/' },
+    ];
+    addrsData.forEach(function(c) {
+      fetch(c.api + c.addr)
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          var bal = null;
+          if (c.label === 'BTC') bal = (d / 1e8).toFixed(8);
+          else if (c.label === 'LTC') bal = (d.data[c.addr].address.balance / 1e8).toFixed(8);
+          else if (c.label === 'TRX') bal = (d.balance / 1e6).toFixed(6);
+          else if (c.label === 'ETH') bal = (d.result / 1e18).toFixed(6);
+          if (bal) {
+            var row = cryptoList.querySelector('.cr-label:contains("' + c.label + '")');
+            if (row) {
+              var addrEl = row.closest('.crypto-row').querySelector('.cr-addr');
+              if (addrEl) addrEl.textContent = bal + ' ' + c.label;
+            }
+          }
+        })
+        .catch(function() {});
+    });
     var observer = new IntersectionObserver(function(entries) {
       entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
     }, { rootMargin: '0px 0px -60px 0px' });
@@ -1743,10 +1771,10 @@
     <div class="panel"><h3></h3><p></p><p></p><p></p><button id="contactBtn">✉ Send message</button></div>
     <div class="panel" id="cryptoPanel"><h3>Crypto Addresses</h3>
       <div id="cryptoList">
-        <div class="crypto-row"><span class="cr-label">LTC</span><span class="cr-addr" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi</span><button class="cr-copy">Copy</button></div>
-        <div class="crypto-row"><span class="cr-label">ETH</span><span class="cr-addr" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B</span><button class="cr-copy">Copy</button></div>
-        <div class="crypto-row"><span class="cr-label">TRX</span><span class="cr-addr" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW</span><button class="cr-copy">Copy</button></div>
-        <div class="crypto-row"><span class="cr-label">BTC</span><span class="cr-addr" data-addr="bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs">bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs</span><button class="cr-copy">Copy</button></div>
+        <div class="crypto-row"><span class="cr-label">LTC</span><span class="cr-addr" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi</span><span class="cr-balance" data-coin="ltc" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">Loading…</span><button class="cr-copy">Copy</button></div>
+        <div class="crypto-row"><span class="cr-label">ETH</span><span class="cr-addr" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B</span><span class="cr-balance" data-coin="eth" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">Loading…</span><button class="cr-copy">Copy</button></div>
+        <div class="crypto-row"><span class="cr-label">TRX</span><span class="cr-addr" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW</span><span class="cr-balance" data-coin="trx" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">Loading…</span><button class="cr-copy">Copy</button></div>
+        <div class="crypto-row"><span class="cr-label">BTC</span><span class="cr-addr" data-addr="bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs">bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs</span><span class="cr-balance" data-coin="btc" data-addr="bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs">Loading…</span><button class="cr-copy">Copy</button></div>
       </div>
     </div>
     <div class="footer"></div>
