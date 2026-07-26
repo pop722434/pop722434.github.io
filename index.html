@@ -348,7 +348,7 @@
     var c = document.getElementById('particles');
     var ctx = c.getContext('2d');
     var w, h, particles = [];
-    function resize() { w = c.width = window.innerWidth; h = c.height = window.innerHeight; bgW = bgCanvas.width = w; bgH = bgCanvas.height = h; }
+    function resize() { w = c.width = window.innerWidth; h = c.height = window.innerHeight; if (bgCanvas) { bgW = bgCanvas.width = w; bgH = bgCanvas.height = h; } }
     window.onresize = resize; resize();
     for (var i = 0; i < 80; i++) {
       particles.push({
