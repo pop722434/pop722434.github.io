@@ -767,14 +767,14 @@ Were just starfish on the beach` },
               if (pel) pel.classList.add('past');
               for (var pw = 0; pw < currentLyrics[pi].words.length; pw++) {
                 var pwel = body.querySelector('[data-wi="' + pi + '-' + pw + '"]');
-                if (pwel) pwel.className = 'lyr-word past';
+                if (pwel) { pwel.className = 'lyr-word past'; pwel.style.background = ''; pwel.style.setProperty('-webkit-background-clip',''); pwel.style.setProperty('-webkit-text-fill-color',''); }
               }
             }
           }
           for (var w = 0; w < line.words.length; w++) {
             var wel = body.querySelector('[data-wi="' + lineIdx + '-' + w + '"]');
             if (!wel) continue;
-            if (w < wordIdx) { wel.className = 'lyr-word past'; }
+            if (w < wordIdx) { wel.className = 'lyr-word past'; wel.style.background = ''; wel.style.setProperty('-webkit-background-clip',''); wel.style.setProperty('-webkit-text-fill-color',''); }
             else if (w === wordIdx) {
               var wStart = line.words[w].start;
               var wEnd = (w + 1 < line.words.length) ? line.words[w + 1].start : ((lineIdx + 1 < currentLyrics.length && currentLyrics[lineIdx + 1].lineStart > line.lineStart) ? currentLyrics[lineIdx + 1].lineStart : wStart + 2);
@@ -784,7 +784,7 @@ Were just starfish on the beach` },
               wel.style.background = 'linear-gradient(to right, #fff ' + pct + '%, rgba(255,255,255,0.2) ' + pct + '%)';
               wel.style.setProperty('-webkit-background-clip', 'text');
               wel.style.setProperty('-webkit-text-fill-color', 'transparent');
-            } else { wel.className = 'lyr-word future'; }
+            } else { wel.className = 'lyr-word future'; wel.style.background = ''; wel.style.setProperty('-webkit-background-clip',''); wel.style.setProperty('-webkit-text-fill-color',''); }
           }
           if (lChanged && lineEl) lineEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
         }
