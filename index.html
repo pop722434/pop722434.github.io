@@ -1704,16 +1704,7 @@ var addrsData = [
       { label: 'BTC', addr: 'bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs', api: 'https://mempool.space/api/address/' },
     ];
     addrsData.forEach(function(c) {
-      if (!c.api) {
-        var rows = cryptoList.querySelectorAll('.cr-label');
-        for (var i = 0; i < rows.length; i++) {
-          if (rows[i].textContent === c.label) {
-            var balEl = rows[i].closest('.crypto-row').querySelector('.cr-balance');
-            if (balEl) balEl.textContent = 'N/A (CORS)';
-          }
-        }
-        return;
-      }
+      if (!c.api) return;
       fetch(c.api + c.addr)
         .then(function(r) { return r.json(); })
         .then(function(d) {
