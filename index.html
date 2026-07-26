@@ -296,7 +296,7 @@
     }
     .bg-viz {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: -2; opacity: 0.35;
+      pointer-events: none; z-index: -2; opacity: 0.65;
     }
     .pi-drag {
       font-size: 10px; color: #484f58; cursor: grab; flex-shrink: 0;
@@ -726,12 +726,12 @@
         var bw = bgW / barCount;
         for (var i = 0; i < barCount; i++) {
           var val = dataArray[Math.floor(i * dataArray.length / barCount)] / 255;
-          var barH = val * bgH * 0.3;
+          var barH = val * bgH * 0.45;
           var x = i * bw;
           var grad = bgCtx.createLinearGradient(0, bgH - barH, 0, bgH);
           grad.addColorStop(0, 'rgba(255,255,255,0)');
-          grad.addColorStop(0.5, 'rgba(255,255,255,' + (val * 0.15) + ')');
-          grad.addColorStop(1, 'rgba(255,255,255,' + (val * 0.3) + ')');
+          grad.addColorStop(0.5, 'rgba(255,255,255,' + (val * 0.3) + ')');
+          grad.addColorStop(1, 'rgba(255,255,255,' + (val * 0.55) + ')');
           bgCtx.fillStyle = grad;
           bgCtx.fillRect(x, bgH - barH, bw + 1, barH);
         }
