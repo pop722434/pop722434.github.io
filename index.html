@@ -1683,18 +1683,20 @@ Were just starfish on the beach` },
 });
     });
 var addrsData = [
-      { label: 'LTC', addr: 'LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi', api: null },
-      { label: 'ETH', addr: '0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B', api: null },
+      { label: 'LTC', addr: 'LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi', api: 'https://api.blockcypher.com/v1/ltc/main/addrs/', suffix: '/balance' },
+      { label: 'ETH', addr: '0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B', api: 'https://api.blockcypher.com/v1/eth/main/addrs/', suffix: '/balance' },
       { label: 'TRX', addr: 'TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW', api: 'https://apilist.tronscan.org/api/account?address=' },
       { label: 'BTC', addr: 'bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs', api: 'https://mempool.space/api/address/' },
     ];
     addrsData.forEach(function(c) {
       if (!c.api) return;
-      fetch(c.api + c.addr)
+      fetch(c.api + c.addr + (c.suffix || ''))
         .then(function(r) { return r.json(); })
         .then(function(d) {
           var bal = null;
           if (c.label === 'BTC') bal = (d.chain_stats.funded_txo_sum - d.chain_stats.spent_txo_sum) / 1e8;
+          else if (c.label === 'LTC') bal = d.balance / 1e8;
+          else if (c.label === 'ETH') bal = d.balance / 1e18;
           else if (c.label === 'TRX') bal = (d.balance / 1e6).toFixed(6);
           if (bal !== null) {
             var rows = cryptoList.querySelectorAll('.cr-label');
