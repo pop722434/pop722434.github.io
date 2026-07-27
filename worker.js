@@ -7,13 +7,31 @@
 //   TELEGRAM_CHAT_ID    = 8129791340
 //   TURNSTILE_SECRET    = get from Cloudflare Turnstile dashboard (site key: 0x4AAAAAAD-awN30FahbmN2S)
 
+var CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+};
+
+function corsResponse(body, status) {
+  return new Response(body, {
+    status: status,
+    headers: Object.assign({ 'Content-Type': 'application/json' }, CORS_HEADERS),
+  });
+}
+
 addEventListener('fetch', function(event) {
   event.respondWith(handleRequest(event.request));
 });
 
 async function handleRequest(request) {
+  // Handle CORS preflight
+  if (request.method === 'OPTIONS') {
+    return new Response('', { status: 204, headers: CORS_HEADERS });
+  }
+
   if (request.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+    return corsResponse('Method not allowed', 405);
   }
 
   var body = await request.json();
@@ -22,9 +40,7 @@ async function handleRequest(request) {
   var turnstileResp = body['cf-turnstile-response'];
 
   if (!name || !message || !turnstileResp) {
-    return new Response(JSON.stringify({ ok: false, error: 'Missing fields' }), {
-      status: 400, headers: { 'Content-Type': 'application/json' },
-    });
+    return corsResponse(JSON.stringify({ ok: false, error: 'Missing fields' }), 400);
   }
 
   // Verify Turnstile captcha server-side
@@ -36,9 +52,7 @@ async function handleRequest(request) {
   });
   var tsData = await tsRes.json();
   if (!tsData.success) {
-    return new Response(JSON.stringify({ ok: false, error: 'Captcha verification failed' }), {
-      status: 403, headers: { 'Content-Type': 'application/json' },
-    });
+    return corsResponse(JSON.stringify({ ok: false, error: 'Captcha verification failed' }), 403);
   }
 
   var text = 'From: ' + name + '\nMessage: ' + message;
@@ -50,11 +64,7 @@ async function handleRequest(request) {
   var tgData = await tgRes.json();
 
   if (tgData.ok) {
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200, headers: { 'Content-Type': 'application/json' },
-    });
+    return corsResponse(JSON.stringify({ ok: true }), 200);
   }
-  return new Response(JSON.stringify({ ok: false, error: tgData.description || 'Telegram error' }), {
-    status: 500, headers: { 'Content-Type': 'application/json' },
-  });
+  return corsResponse(JSON.stringify({ ok: false, error: tgData.description || 'Telegram error' }), 500);
 }
