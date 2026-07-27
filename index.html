@@ -1631,13 +1631,6 @@ Were just starfish on the beach` },
       }
       charAnim(document.querySelector('.footer'), ':3', 60);
       renderPlaylist();
-      var vcEl = document.getElementById('visitorCount');
-      if (vcEl) {
-        var localCount = parseInt(localStorage.getItem('vcTotal') || '0', 10);
-        localCount++;
-        localStorage.setItem('vcTotal', localCount);
-        vcEl.textContent = localCount + ' visits';
-      }
       var contactModal = document.getElementById('contactModal');
       var cmName = document.getElementById('cmName');
       var cmMsg = document.getElementById('cmMsg');
@@ -1801,6 +1794,13 @@ var addrsData = [
       }, { rootMargin: '0px 0px -60px 0px' });
       obs.observe(p);
     });
+    var vcEl = document.getElementById('visitorCount');
+    if (vcEl) {
+      var localCount = parseInt(localStorage.getItem('vcTotal') || '0', 10);
+      localCount++;
+      localStorage.setItem('vcTotal', localCount);
+      vcEl.textContent = localCount + ' visits';
+    }
   </script>
 </body>
 </html>
