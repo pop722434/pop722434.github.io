@@ -1658,7 +1658,7 @@ Were just starfish on the beach` },
         var last = parseInt(localStorage.getItem('msgCooldown') || '0', 10);
         if (Date.now() - last < 60000) { toast('Wait ' + Math.ceil((60000 - (Date.now() - last)) / 1000) + 's before sending again'); return; }
         cmSubmit.disabled = true; cmSubmit.textContent = 'Sending...';
-        fetch('https://YOUR_WORKER.YOUR_SUBDOMAIN.workers.dev', {
+        fetch('https://young-mode-02ea.trtpop722434.workers.dev', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: name, message: msg, 'cf-turnstile-response': tok })
         }).then(function(r) { return r.json(); }).then(function(d) {
