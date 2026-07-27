@@ -1633,17 +1633,10 @@
       renderPlaylist();
       var vcEl = document.getElementById('visitorCount');
       if (vcEl) {
-        var localCount = parseInt(localStorage.getItem('visitorLocal') || '0', 10);
-        var visited = localStorage.getItem('visited');
-        if (!visited) { localCount++; localStorage.setItem('visitorLocal', localCount); localStorage.setItem('visited', '1'); }
+        var localCount = parseInt(localStorage.getItem('visitorTotal') || '0', 10);
+        localCount++;
+        localStorage.setItem('visitorTotal', localCount);
         vcEl.textContent = localCount + ' visits';
-        fetch('https://api.countapi.xyz/' + (visited ? 'get' : 'hit') + '/pop722434.github.io/visitors')
-          .then(function(r) { return r.json(); })
-          .then(function(d) {
-            var n = d.value;
-            if (n > localCount) { localStorage.setItem('visitorLocal', n); vcEl.textContent = n + ' visits'; }
-          })
-          .catch(function(e) { console.log('Visitor API unavailable, using local count'); });
       }
       var contactModal = document.getElementById('contactModal');
       var cmName = document.getElementById('cmName');
