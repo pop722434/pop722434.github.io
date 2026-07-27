@@ -1633,12 +1633,9 @@ Were just starfish on the beach` },
       renderPlaylist();
       var vcEl = document.getElementById('visitorCount');
       if (vcEl) {
-        var localCount = parseInt(localStorage.getItem('vcUnique') || '0', 10);
-        if (!localStorage.getItem('vcSeen')) {
-          localCount++;
-          localStorage.setItem('vcUnique', localCount);
-          localStorage.setItem('vcSeen', '1');
-        }
+        var localCount = parseInt(localStorage.getItem('vcTotal') || '0', 10);
+        localCount++;
+        localStorage.setItem('vcTotal', localCount);
         vcEl.textContent = localCount + ' visits';
       }
       var contactModal = document.getElementById('contactModal');
