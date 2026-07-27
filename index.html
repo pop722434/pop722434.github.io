@@ -1633,9 +1633,12 @@
       renderPlaylist();
       var vcEl = document.getElementById('visitorCount');
       if (vcEl) {
-        var localCount = parseInt(localStorage.getItem('visitorTotal') || '0', 10);
-        localCount++;
-        localStorage.setItem('visitorTotal', localCount);
+        var localCount = parseInt(localStorage.getItem('visitorUnique') || '0', 10);
+        if (!localStorage.getItem('visited')) {
+          localCount++;
+          localStorage.setItem('visitorUnique', localCount);
+          localStorage.setItem('visited', '1');
+        }
         vcEl.textContent = localCount + ' visits';
       }
       var contactModal = document.getElementById('contactModal');
