@@ -1633,11 +1633,11 @@
       renderPlaylist();
       var vcEl = document.getElementById('visitorCount');
       if (vcEl) {
-        var localCount = parseInt(localStorage.getItem('visitorUnique') || '0', 10);
-        if (!localStorage.getItem('visited')) {
+        var localCount = parseInt(localStorage.getItem('vcUnique') || '0', 10);
+        if (!localStorage.getItem('vcSeen')) {
           localCount++;
-          localStorage.setItem('visitorUnique', localCount);
-          localStorage.setItem('visited', '1');
+          localStorage.setItem('vcUnique', localCount);
+          localStorage.setItem('vcSeen', '1');
         }
         vcEl.textContent = localCount + ' visits';
       }
