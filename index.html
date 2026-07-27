@@ -1658,13 +1658,12 @@ Were just starfish on the beach` },
         var last = parseInt(localStorage.getItem('msgCooldown') || '0', 10);
         if (Date.now() - last < 60000) { toast('Wait ' + Math.ceil((60000 - (Date.now() - last)) / 1000) + 's before sending again'); return; }
         cmSubmit.disabled = true; cmSubmit.textContent = 'Sending...';
-        var text = 'From: ' + name + '\nMessage: ' + msg;
-        fetch('https://api.telegram.org/bot' + atob('ODg1NzMwOTA0MDpBQUVYbHJfWmdxWVdvQXZuUWp0cVlBc0JBa243RnZBdU5kOA==') + '/sendMessage', {
+        fetch('https://YOUR_WORKER.YOUR_SUBDOMAIN.workers.dev', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: '8129791340', text: text })
+          body: JSON.stringify({ name: name, message: msg, 'cf-turnstile-response': tok })
         }).then(function(r) { return r.json(); }).then(function(d) {
           if (d.ok) { toast('Message sent!'); localStorage.setItem('msgCooldown', Date.now()); cmName.value = ''; cmMsg.value = ''; contactModal.classList.remove('open'); }
-          else { toast('Telegram: ' + (d.description || 'unknown error') + '. Make sure you started the bot first.'); }
+          else { toast('Error: ' + (d.error || 'unknown')); }
         }).catch(function() { toast('Network error - check console'); }).finally(function() { cmSubmit.disabled = false; cmSubmit.textContent = 'Send'; });
       };
       var cryptoList = document.getElementById('cryptoList');
