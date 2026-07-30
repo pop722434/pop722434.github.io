@@ -1815,10 +1815,12 @@ var addrsData = [
     });
     var vcEl = document.getElementById('visitorCount');
     if (vcEl) {
-      var localCount = parseInt(localStorage.getItem('vcTotal') || '0', 10);
-      localCount++;
-      localStorage.setItem('vcTotal', localCount);
-      vcEl.textContent = localCount + ' visits';
+      var seen = localStorage.getItem('vcSeen');
+      fetch('https://young-mode-02ea.trtpop722434.workers.dev/visit' + (seen ? '' : ''), { method: seen ? 'GET' : 'POST' })
+        .then(function(r) { return r.json(); })
+        .then(function(d) { vcEl.textContent = d.count + ' visits'; })
+        .catch(function() { vcEl.textContent = '—'; });
+      if (!seen) localStorage.setItem('vcSeen', '1');
     }
     var priceSelect = document.getElementById('priceSelect');
     var ptPrice = document.getElementById('ptPrice');
