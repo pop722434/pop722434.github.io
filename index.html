@@ -456,7 +456,21 @@
     }
     #keybindsHint:hover { opacity: 1; }
     #keybindsHint span { display: inline-block; min-width: 20px; color: #6b7280; }
-    @media (max-width: 600px) {
+    @media (max-width: 640px) {
+      .music-player { top: 10px; right: 10px; left: 10px; padding: 10px 12px; gap: 8px; min-width: 0; }
+      .music-player img { width: 32px; height: 32px; }
+      .music-player .player-info .song-title { font-size: 12px; max-width: 100px; }
+      .music-player .player-info .song-artist { display: none; }
+      .music-player #shuffleBtn,
+      .music-player #repeatBtn,
+      .music-player #speedBtn,
+      .music-player #vizModeBtn,
+      .music-player #eqBtn,
+      .music-player #downloadBtn,
+      .music-player input[type="range"] { display: none; }
+      .music-player .controls { gap: 3px; }
+      .music-player .controls button { padding: 5px 7px; font-size: 11px; }
+      .music-player .controls #volLabel { font-size: 10px; }
       .bottom-bar { padding: 8px 12px; gap: 8px; }
       .bottom-bar .bb-art { width: 28px; height: 28px; }
       .bottom-bar .bb-controls button { padding: 4px 8px; font-size: 11px; }
