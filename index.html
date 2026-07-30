@@ -520,6 +520,14 @@
     }
     .crypto-row button:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); }
     .crypto-row button.copied { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.4); color: #e6edf3; }
+    .price-ticker { display: flex; align-items: center; gap: 8px; padding: 8px 0; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .price-ticker select { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #e6edf3; border-radius: 6px; padding: 4px 8px; font-size: 12px; cursor: pointer; font-family: inherit; }
+    .price-ticker select:focus { outline: none; border-color: rgba(255,255,255,0.3); }
+    .price-ticker .pt-price { font-size: 13px; color: #e6edf3; font-weight: 500; font-variant-numeric: tabular-nums; }
+    .price-ticker .pt-change { font-size: 11px; padding: 2px 6px; border-radius: 4px; }
+    .price-ticker .pt-change.up { color: #3fb950; background: rgba(63,185,80,0.1); }
+    .price-ticker .pt-change.down { color: #f85149; background: rgba(248,81,73,0.1); }
+    .price-ticker .pt-label { font-size: 11px; color: #6b7280; }
   </style>
 </head>
 <body>
@@ -1718,6 +1726,39 @@ var addrsData = [
           }
         });
     });
+    var priceSelect = document.getElementById('priceSelect');
+    var ptPrice = document.getElementById('ptPrice');
+    var ptChange = document.getElementById('ptChange');
+    var cachedPrices = {};
+    function fetchPrice() {
+      var coin = priceSelect.value;
+      if (cachedPrices[coin] && Date.now() - cachedPrices[coin].time < 60000) {
+        updatePriceDisplay(coin, cachedPrices[coin]);
+        return;
+      }
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,litecoin,ethereum&vs_currencies=usd&include_24hr_change=true')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          var map = { bitcoin: 'bitcoin', litecoin: 'litecoin', ethereum: 'ethereum' };
+          for (var k in map) {
+            if (d[map[k]]) {
+              cachedPrices[k] = { usd: d[map[k]].usd, change: d[map[k]].usd_24h_change, time: Date.now() };
+            }
+          }
+          updatePriceDisplay(coin, cachedPrices[coin]);
+        });
+    }
+    function updatePriceDisplay(coin, data) {
+      if (!data || !data.usd) { ptPrice.textContent = '—'; ptChange.textContent = ''; return; }
+      ptPrice.textContent = '$' + data.usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (data.change != null) {
+        ptChange.textContent = (data.change >= 0 ? '+' : '') + data.change.toFixed(2) + '%';
+        ptChange.className = 'pt-change' + (data.change >= 0 ? ' up' : ' down');
+      }
+    }
+    priceSelect.onchange = function() { var coin = priceSelect.value; updatePriceDisplay(coin, cachedPrices[coin]); if (!cachedPrices[coin]) fetchPrice(); };
+    fetchPrice();
+    setInterval(fetchPrice, 60000);
     var observer = new IntersectionObserver(function(entries) {
       entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
     }, { rootMargin: '0px 0px -60px 0px' });
@@ -1779,6 +1820,16 @@ var addrsData = [
     <div class="panel"><h3></h3><p></p><p></p><p></p><button id="contactBtn">✉ Send message</button></div>
     <div class="panel" id="cryptoPanel"><h3>Crypto Addresses</h3>
       <div id="cryptoList">
+        <div class="price-ticker">
+          <span class="pt-label">Price:</span>
+          <select id="priceSelect">
+            <option value="bitcoin">BTC</option>
+            <option value="litecoin">LTC</option>
+            <option value="ethereum">ETH</option>
+          </select>
+          <span class="pt-price" id="ptPrice">—</span>
+          <span class="pt-change" id="ptChange"></span>
+        </div>
         <div class="crypto-row"><span class="cr-label">LTC</span><span class="cr-addr" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi</span><span class="cr-balance" data-coin="ltc" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">Loading…</span><button class="cr-copy">Copy</button></div>
         <div class="crypto-row"><span class="cr-label">ETH</span><span class="cr-addr" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B</span><span class="cr-balance" data-coin="eth" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">Loading…</span><button class="cr-copy">Copy</button></div>
         <div class="crypto-row"><span class="cr-label">TRX</span><span class="cr-addr" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW</span><span class="cr-balance" data-coin="trx" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">Loading…</span><button class="cr-copy">Copy</button></div>
