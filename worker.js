@@ -16,11 +16,10 @@ var CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-function corsResponse(body, status) {
-  return new Response(body, {
-    status: status,
-    headers: Object.assign({ 'Content-Type': 'application/json' }, CORS_HEADERS),
-  });
+function corsResponse(body, status, extra) {
+  var h = Object.assign({ 'Content-Type': 'application/json' }, CORS_HEADERS);
+  if (extra) Object.assign(h, extra);
+  return new Response(body, { status: status, headers: h });
 }
 
 addEventListener('fetch', function(event) {
@@ -37,15 +36,16 @@ async function handleRequest(request) {
 
   // Visitor counter
   if (url.pathname === '/visit') {
+    var noCache = { 'Cache-Control': 'no-cache, no-store, must-revalidate' };
     if (request.method === 'GET') {
       var count = parseInt(await VISITORS.get('count') || '0', 10);
-      return corsResponse(JSON.stringify({ count: count }), 200);
+      return corsResponse(JSON.stringify({ count: count }), 200, noCache);
     }
     if (request.method === 'POST') {
       var newCount = await VISITORS.get('count') || '0';
       newCount = parseInt(newCount, 10) + 1;
       await VISITORS.put('count', String(newCount));
-      return corsResponse(JSON.stringify({ count: newCount }), 200);
+      return corsResponse(JSON.stringify({ count: newCount }), 200, noCache);
     }
     return corsResponse('Method not allowed', 405);
   }
