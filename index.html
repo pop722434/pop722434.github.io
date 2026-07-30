@@ -202,13 +202,15 @@
     }
     .mobile-warn { text-align: center; font-size: 10px; color: #6b7280; padding: 6px 0 2px; }
     .scroll-hint {
-      text-align: center; margin: 10px 0 0; font-size: 11px;
-      color: #484f58; animation: scrollBob 2s ease-in-out infinite;
-      letter-spacing: 1px; text-transform: uppercase;
+      position: fixed; right: 12px; top: 50%; transform: translateY(-50%) rotate(90deg);
+      font-size: 10px; color: #484f58; letter-spacing: 3px; text-transform: uppercase;
+      animation: scrollBob 1.8s ease-in-out infinite; z-index: 1;
+      transition: opacity 0.6s; white-space: nowrap;
     }
+    .scroll-hint.hidden { opacity: 0; }
     @keyframes scrollBob {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(4px); }
+      0%, 100% { transform: translateY(-50%) rotate(90deg) translateX(0); }
+      50% { transform: translateY(-50%) rotate(90deg) translateX(6px); }
     }
     .playlist-btn { font-size: 16px; line-height: 1; padding: 6px 8px !important; }
     .shuffle-btn, .repeat-btn, .lyrics-btn { font-size: 14px; line-height: 1; padding: 6px 7px !important; }
@@ -1413,8 +1415,8 @@ Were just starfish on the beach` },
     var scrollTimer;
     window.addEventListener('scroll', function() {
       clearTimeout(scrollTimer);
-      if (window.scrollY > 200) { player.classList.add('mini'); bbBar.classList.add('visible'); }
-      else { scrollTimer = setTimeout(function() { player.classList.remove('mini'); bbBar.classList.remove('visible'); }, 200); }
+      if (window.scrollY > 200) { player.classList.add('mini'); bbBar.classList.add('visible'); document.getElementById('scrollHint').classList.add('hidden'); }
+      else { scrollTimer = setTimeout(function() { player.classList.remove('mini'); bbBar.classList.remove('visible'); document.getElementById('scrollHint').classList.remove('hidden'); }, 200); }
     });
 
     document.addEventListener('keydown', function(e) {
@@ -1943,7 +1945,7 @@ var addrsData = [
       </div>
     </div>
     <div class="footer"></div>
-    <div class="scroll-hint">scroll</div>
+    <div class="scroll-hint" id="scrollHint">scroll down</div>
   </div>
   <script>
     document.querySelectorAll('.panel').forEach(function(p) {
