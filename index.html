@@ -585,7 +585,25 @@
     }
     .crypto-row button:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); }
     .crypto-row button.copied { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.4); color: #e6edf3; }
-    .goal-bar { margin-top: 12px; }
+    .crypto-row .cr-qr { padding: 5px 7px; font-size: 13px; margin-left: 2px; }
+    #qrModal {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10003;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+    }
+    #qrModal.open { display: flex; }
+    #qrModal .qr-box {
+      background: #fff; border-radius: 16px; padding: 24px; text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+    }
+    #qrModal .qr-box img { width: 200px; height: 200px; display: block; margin: 0 auto; border-radius: 8px; }
+    #qrModal .qr-box .qr-label { font-size: 12px; color: #222; margin-top: 10px; font-weight: 600; }
+    #qrModal .qr-box .qr-addr { font-size: 10px; color: #666; word-break: break-all; margin-top: 4px; max-width: 260px; }
+    #qrModal .qr-box .qr-close {
+      margin-top: 12px; border: none; background: #eee; color: #333;
+      padding: 6px 20px; border-radius: 8px; cursor: pointer; font-size: 12px; font-family: inherit;
+    }
+    #qrModal .qr-box .qr-close:hover { background: #ddd; }
     .goal-bar .gb-header { display: flex; justify-content: space-between; font-size: 11px; color: #9ca3af; margin-bottom: 4px; }
     .goal-bar .gb-track { height: 6px; background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; }
     .goal-bar .gb-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #6b7280, #e6edf3); border-radius: 4px; transition: width 0.5s ease; }
@@ -669,6 +687,14 @@
       <h2>Equalizer</h2>
       <div class="eq-presets" id="eqPresetBar"></div>
       <div id="eqSliders"></div>
+    </div>
+  </div>
+  <div id="qrModal">
+    <div class="qr-box">
+      <img id="qrImg" src="" alt="QR">
+      <div class="qr-label" id="qrLabel"></div>
+      <div class="qr-addr" id="qrAddr"></div>
+      <button class="qr-close" id="qrClose">Close</button>
     </div>
   </div>
   <script>
@@ -1824,6 +1850,25 @@ Were just starfish on the beach` },
         };
 });
     });
+    var qrModal = document.getElementById('qrModal');
+    var qrImg = document.getElementById('qrImg');
+    var qrLabel = document.getElementById('qrLabel');
+    var qrAddr = document.getElementById('qrAddr');
+    var qrClose = document.getElementById('qrClose');
+    cryptoList.addEventListener('click', function(e) {
+      var btn = e.target.closest('.cr-qr');
+      if (!btn) return;
+      var addr = btn.getAttribute('data-addr');
+      if (!addr) return;
+      var row = btn.closest('.crypto-row');
+      var label = row.querySelector('.cr-label').textContent;
+      qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(addr);
+      qrLabel.textContent = label;
+      qrAddr.textContent = addr;
+      qrModal.classList.add('open');
+    });
+    qrClose.onclick = function() { qrModal.classList.remove('open'); };
+    qrModal.addEventListener('click', function(e) { if (e.target === this) qrModal.classList.remove('open'); });
 var addrsData = [
       { label: 'LTC', addr: 'LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi', api: 'https://young-mode-02ea.trtpop722434.workers.dev/balance?coin=ltc&addr=' },
       { label: 'ETH', addr: '0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B', api: 'https://young-mode-02ea.trtpop722434.workers.dev/balance?coin=eth&addr=' },
@@ -1943,10 +1988,10 @@ var addrsData = [
           <span class="pt-label">USD</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><span style="width:32px;flex-shrink:0"></span><span style="flex:1"></span><span class="cr-balance" style="font-size:10px;color:#6b7280;font-weight:600">Balance</span><span style="width:44px"></span></div>
-        <div class="crypto-row"><span class="cr-label">LTC</span><span class="cr-addr" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi</span><span class="cr-balance" data-coin="ltc" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">Loading…</span><button class="cr-copy">Copy</button></div>
-        <div class="crypto-row"><span class="cr-label">ETH</span><span class="cr-addr" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B</span><span class="cr-balance" data-coin="eth" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">Loading…</span><button class="cr-copy">Copy</button></div>
-        <div class="crypto-row"><span class="cr-label">TRX</span><span class="cr-addr" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW</span><span class="cr-balance" data-coin="trx" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">Loading…</span><button class="cr-copy">Copy</button></div>
-        <div class="crypto-row"><span class="cr-label">BTC</span><span class="cr-addr" data-addr="bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs">bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs</span><span class="cr-balance" data-coin="btc" data-addr="bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs">Loading…</span><button class="cr-copy">Copy</button></div>
+        <div class="crypto-row"><span class="cr-label">LTC</span><span class="cr-addr" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi</span><span class="cr-balance" data-coin="ltc" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">Loading…</span><button class="cr-copy">Copy</button><button class="cr-qr" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">▦</button></div>
+        <div class="crypto-row"><span class="cr-label">ETH</span><span class="cr-addr" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B</span><span class="cr-balance" data-coin="eth" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">Loading…</span><button class="cr-copy">Copy</button><button class="cr-qr" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">▦</button></div>
+        <div class="crypto-row"><span class="cr-label">TRX</span><span class="cr-addr" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW</span><span class="cr-balance" data-coin="trx" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">Loading…</span><button class="cr-copy">Copy</button><button class="cr-qr" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">▦</button></div>
+        <div class="crypto-row"><span class="cr-label">BTC</span><span class="cr-addr" data-addr="bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs">bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs</span><span class="cr-balance" data-coin="btc" data-addr="bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs">Loading…</span><button class="cr-copy">Copy</button><button class="cr-qr" data-addr="bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs">▦</button></div>
       </div>
       <div style="font-size:11px;color:#9ca3af;text-align:center;margin-top:8px;font-weight:300">Total: <span id="cryptoTotal">$0.00</span> USD</div>
       <div class="goal-bar">
