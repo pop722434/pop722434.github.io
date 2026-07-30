@@ -444,6 +444,50 @@
     }
     #helpModal .hm-box td:last-child { color: #e6edf3; text-align: right; }
     #helpModal .hm-box .hm-hint { color: #484f58; font-size: 11px; text-align: center; margin-top: 14px; }
+    #eqModal {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10001;
+      background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+    }
+    #eqModal.open { display: flex; }
+    #eqModal .eq-box {
+      background: rgba(10,12,18,0.96); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px; padding: 24px 28px; max-width: 480px; width: 90vw;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6); max-height: 85vh; overflow-y: auto;
+    }
+    #eqModal .eq-box h2 { font-size: 16px; color: #e6edf3; font-weight: 600; margin-bottom: 12px; }
+    #eqModal .eq-close {
+      float: right; border: none; background: none; color: #6b7280; font-size: 14px; cursor: pointer; padding: 4px 8px; border-radius: 6px;
+    }
+    #eqModal .eq-close:hover { background: rgba(255,255,255,0.06); color: #e6edf3; }
+    #eqModal .eq-presets { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+    #eqModal .eq-presets button {
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+      color: #9ca3af; border-radius: 8px; padding: 5px 12px; cursor: pointer;
+      font-size: 11px; font-family: inherit; transition: all 0.2s;
+    }
+    #eqModal .eq-presets button:hover { background: rgba(255,255,255,0.1); }
+    #eqModal .eq-presets button.active { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.25); color: #e6edf3; }
+    #eqModal .eq-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+    }
+    #eqModal .eq-row .eq-freq {
+      width: 50px; font-size: 10px; color: #6b7280; text-align: right; flex-shrink: 0;
+    }
+    #eqModal .eq-row input[type="range"] {
+      flex: 1; height: 3px; -webkit-appearance: none; appearance: none;
+      background: rgba(255,255,255,0.1); border-radius: 2px; outline: none; cursor: pointer;
+    }
+    #eqModal .eq-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: #fff; border: none; cursor: pointer;
+    }
+    #eqModal .eq-row .eq-val {
+      width: 42px; font-size: 10px; color: #9ca3af; text-align: right; font-variant-numeric: tabular-nums; flex-shrink: 0;
+    }
+    #eqModal .eq-row .eq-val.positive { color: #3fb950; }
+    #eqModal .eq-row .eq-val.negative { color: #f85149; }
     .fs-viz .bg-viz { z-index: 9998; opacity: 1 !important; }
     .fs-viz .content, .fs-viz .avatar-wrap, .fs-viz .footer,
     .fs-viz .scroll-hint, .fs-viz .music-player, .fs-viz .bottom-bar { display: none; }
@@ -465,7 +509,6 @@
       .music-player #repeatBtn,
       .music-player #speedBtn,
       .music-player #vizModeBtn,
-      .music-player #eqBtn,
       .music-player #downloadBtn,
       .music-player input[type="range"] { display: none; }
       .music-player .controls { gap: 3px; }
@@ -615,6 +658,14 @@
       <h2>Keyboard Shortcuts</h2>
       <table><tbody id="hmBody"></tbody></table>
       <div class="hm-hint">Press <strong>?</strong> again to close</div>
+    </div>
+  </div>
+  <div id="eqModal">
+    <div class="eq-box">
+      <button class="eq-close" id="eqClose">✕</button>
+      <h2>Equalizer</h2>
+      <div class="eq-presets" id="eqPresetBar"></div>
+      <div id="eqSliders"></div>
     </div>
   </div>
   <script>
@@ -1139,12 +1190,62 @@ Were just starfish on the beach` },
       toast('Viz: ' + vizModes[vizModeIdx]);
     };
     var eqBtn = document.getElementById('eqBtn');
-    eqBtn.onclick = function() {
-      eqIdx = (eqIdx + 1) % eqPresets.length;
-      applyEQ(eqIdx);
-      eqBtn.textContent = eqIdx === 0 ? '🎛' : eqPresets[eqIdx].name.charAt(0);
-      toast('EQ: ' + eqPresets[eqIdx].name);
-    };
+    var eqModal = document.getElementById('eqModal');
+    var eqClose = document.getElementById('eqClose');
+    var eqSlidersEl = document.getElementById('eqSliders');
+    var eqPresetBar = document.getElementById('eqPresetBar');
+    var eqFreqs = [60, 170, 310, 600, 1000, 3000, 6000, 10000, 14000, 20000];
+    eqBtn.onclick = function() { eqModal.classList.toggle('open'); };
+    eqClose.onclick = function() { eqModal.classList.remove('open'); };
+    eqModal.addEventListener('click', function(e) { if (e.target === this) eqModal.classList.remove('open'); });
+    function buildEQModal() {
+      eqSlidersEl.innerHTML = '';
+      eqPresetBar.innerHTML = '';
+      for (var pi = 0; pi < eqPresets.length; pi++) {
+        var pb = document.createElement('button');
+        pb.textContent = eqPresets[pi].name;
+        pb.dataset.idx = pi;
+        pb.onclick = function() { var i = +this.dataset.idx; eqIdx = i; applyEQ(i); syncSliders(); highlightPreset(); };
+        eqPresetBar.appendChild(pb);
+      }
+      for (var i = 0; i < eqFreqs.length; i++) {
+        var row = document.createElement('div');
+        row.className = 'eq-row';
+        var freq = document.createElement('span');
+        freq.className = 'eq-freq'; freq.textContent = eqFreqs[i] >= 1000 ? (eqFreqs[i]/1000)+'k' : eqFreqs[i]+'Hz';
+        var input = document.createElement('input');
+        input.type = 'range'; input.min = -12; input.max = 12; input.step = 0.5; input.value = 0;
+        input.dataset.idx = i;
+        input.oninput = function() {
+          var idx = +this.dataset.idx;
+          var val = +this.value;
+          if (eqFilters.length > 0) eqFilters[idx].gain.value = val;
+          var valEl = this.parentNode.querySelector('.eq-val');
+          valEl.textContent = (val >= 0 ? '+' : '') + val.toFixed(1) + 'dB';
+          valEl.className = 'eq-val' + (val > 0 ? ' positive' : val < 0 ? ' negative' : '');
+          eqIdx = -1;
+          highlightPreset();
+        };
+        var valEl = document.createElement('span');
+        valEl.className = 'eq-val'; valEl.textContent = '0.0dB';
+        row.appendChild(freq); row.appendChild(input); row.appendChild(valEl);
+        eqSlidersEl.appendChild(row);
+      }
+    }
+    function syncSliders() {
+      var inputs = eqSlidersEl.querySelectorAll('input[type="range"]');
+      for (var i = 0; i < inputs.length; i++) {
+        var val = eqFilters.length > 0 ? eqFilters[i].gain.value : 0;
+        inputs[i].value = val;
+        var valEl = inputs[i].parentNode.querySelector('.eq-val');
+        valEl.textContent = (val >= 0 ? '+' : '') + val.toFixed(1) + 'dB';
+        valEl.className = 'eq-val' + (val > 0 ? ' positive' : val < 0 ? ' negative' : '');
+      }
+    }
+    function highlightPreset() {
+      var btns = eqPresetBar.querySelectorAll('button');
+      for (var i = 0; i < btns.length; i++) btns[i].classList.toggle('active', +btns[i].dataset.idx === eqIdx);
+    }
     var fullscreenViz = false;
     var bbBar = document.getElementById('bottomBar');
     var bbArt = document.getElementById('bbArt');
@@ -1613,6 +1714,7 @@ Were just starfish on the beach` },
     }, 100);
     enterBtn.onclick = function() {
       loader.classList.add('hidden'); initViz();
+      syncSliders();
       loadTrack(0, true);
     };
     var loadText = document.querySelector('#loader .text');
@@ -1783,6 +1885,7 @@ var addrsData = [
     window.addEventListener('beforeunload', saveState);
     restoreState();
     populateHelpModal();
+    buildEQModal();
   </script>
   <div id="keybindsHint"><span>Space</span> play/pause &nbsp; <span>N/P</span> next/prev &nbsp; <span>L</span> lyrics &nbsp; <span>M</span> mute &nbsp; <span>S</span> shuffle &nbsp; <span>R</span> repeat &nbsp; <span>F</span> fullviz &nbsp; <span>`</span> help</div>
   <div id="contactModal">
