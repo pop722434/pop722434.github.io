@@ -68,6 +68,24 @@ async function handleRequest(request) {
     return corsResponse(JSON.stringify({ error: 'Unknown coin' }), 400);
   }
 
+  // Total donated counter
+  if (url.pathname === '/total') {
+    var noCache = { 'Cache-Control': 'no-cache, no-store, must-revalidate' };
+    if (request.method === 'GET') {
+      var total = parseFloat(await VISITORS.get('totalDonated') || '0');
+      return corsResponse(JSON.stringify({ total: total }), 200, noCache);
+    }
+    if (request.method === 'POST') {
+      var body = await request.json();
+      var current = parseFloat(await VISITORS.get('totalDonated') || '0');
+      if (body.add != null) current += parseFloat(body.add);
+      else if (body.total != null) current = parseFloat(body.total);
+      await VISITORS.put('totalDonated', String(current));
+      return corsResponse(JSON.stringify({ total: current }), 200, noCache);
+    }
+    return corsResponse('Method not allowed', 405);
+  }
+
   // Contact form - only POST
   if (request.method !== 'POST') {
     return corsResponse('Method not allowed', 405);
