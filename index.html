@@ -1869,7 +1869,7 @@ Were just starfish on the beach` },
     });
     qrClose.onclick = function() { qrModal.classList.remove('open'); };
     qrModal.addEventListener('click', function(e) { if (e.target === this) qrModal.classList.remove('open'); });
-var addrsData = [
+    var addrsData = [
       { label: 'LTC', addr: 'LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi', api: 'https://young-mode-02ea.trtpop722434.workers.dev/balance?coin=ltc&addr=' },
       { label: 'ETH', addr: '0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B', api: 'https://young-mode-02ea.trtpop722434.workers.dev/balance?coin=eth&addr=' },
       { label: 'TRX', addr: 'TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW', api: 'https://apilist.tronscan.org/api/account?address=' },
@@ -1942,6 +1942,7 @@ var addrsData = [
     updateTitle();
     populateHelpModal();
     buildEQModal();
+    });
   </script>
   <div id="keybindsHint"><span>Space</span> play/pause &nbsp; <span>N/P</span> next/prev &nbsp; <span>L</span> lyrics &nbsp; <span>M</span> mute &nbsp; <span>S</span> shuffle &nbsp; <span>R</span> repeat &nbsp; <span>F</span> fullviz &nbsp; <span>`</span> help</div>
   <div id="contactModal">
