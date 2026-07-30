@@ -231,6 +231,10 @@
     .playlist-panel::-webkit-scrollbar { width: 3px; }
     .playlist-panel::-webkit-scrollbar-track { background: transparent; }
     .playlist-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
     .playlist-header {
       padding: 6px 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);
       margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;
@@ -837,15 +841,14 @@ Were just starfish on the beach` },
       if (autoplay) {
         audio.play().then(function() {
           img.classList.add('spinning');
-          if (restoreVol) {
-            var si = 0;
-            var steps = 5;
-            var fadeIn = setInterval(function() {
-              si++;
-              audio.volume = Math.min(restoreVol, (si / steps) * restoreVol);
-              if (si >= steps) { clearInterval(fadeIn); audio.volume = restoreVol; }
-            }, 25);
-          }
+          var targetVol = restoreVol || +volumeSlider.value || 1;
+          var si = 0;
+          var steps = 5;
+          var fadeIn = setInterval(function() {
+            si++;
+            audio.volume = Math.min(targetVol, (si / steps) * targetVol);
+            if (si >= steps) { clearInterval(fadeIn); audio.volume = targetVol; }
+          }, 25);
         }).catch(function(){});
       } else {
         audio.volume = restoreVol || 1;
