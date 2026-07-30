@@ -1726,39 +1726,6 @@ var addrsData = [
           }
         });
     });
-    var priceSelect = document.getElementById('priceSelect');
-    var ptPrice = document.getElementById('ptPrice');
-    var ptChange = document.getElementById('ptChange');
-    var cachedPrices = {};
-    function fetchPrice() {
-      var coin = priceSelect.value;
-      if (cachedPrices[coin] && Date.now() - cachedPrices[coin].time < 60000) {
-        updatePriceDisplay(coin, cachedPrices[coin]);
-        return;
-      }
-      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,litecoin,ethereum&vs_currencies=usd&include_24hr_change=true')
-        .then(function(r) { return r.json(); })
-        .then(function(d) {
-          var map = { bitcoin: 'bitcoin', litecoin: 'litecoin', ethereum: 'ethereum' };
-          for (var k in map) {
-            if (d[map[k]]) {
-              cachedPrices[k] = { usd: d[map[k]].usd, change: d[map[k]].usd_24h_change, time: Date.now() };
-            }
-          }
-          updatePriceDisplay(coin, cachedPrices[coin]);
-        });
-    }
-    function updatePriceDisplay(coin, data) {
-      if (!data || !data.usd) { ptPrice.textContent = '—'; ptChange.textContent = ''; return; }
-      ptPrice.textContent = '$' + data.usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      if (data.change != null) {
-        ptChange.textContent = (data.change >= 0 ? '+' : '') + data.change.toFixed(2) + '%';
-        ptChange.className = 'pt-change' + (data.change >= 0 ? ' up' : ' down');
-      }
-    }
-    priceSelect.onchange = function() { var coin = priceSelect.value; updatePriceDisplay(coin, cachedPrices[coin]); if (!cachedPrices[coin]) fetchPrice(); };
-    fetchPrice();
-    setInterval(fetchPrice, 60000);
     var observer = new IntersectionObserver(function(entries) {
       entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('visible'); });
     }, { rootMargin: '0px 0px -60px 0px' });
@@ -1853,6 +1820,39 @@ var addrsData = [
       localStorage.setItem('vcTotal', localCount);
       vcEl.textContent = localCount + ' visits';
     }
+    var priceSelect = document.getElementById('priceSelect');
+    var ptPrice = document.getElementById('ptPrice');
+    var ptChange = document.getElementById('ptChange');
+    var cachedPrices = {};
+    function fetchPrice() {
+      var coin = priceSelect.value;
+      if (cachedPrices[coin] && Date.now() - cachedPrices[coin].time < 60000) {
+        updatePriceDisplay(coin, cachedPrices[coin]);
+        return;
+      }
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,litecoin,ethereum&vs_currencies=usd&include_24hr_change=true')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          var map = { bitcoin: 'bitcoin', litecoin: 'litecoin', ethereum: 'ethereum' };
+          for (var k in map) {
+            if (d[map[k]]) {
+              cachedPrices[k] = { usd: d[map[k]].usd, change: d[map[k]].usd_24h_change, time: Date.now() };
+            }
+          }
+          updatePriceDisplay(coin, cachedPrices[coin]);
+        });
+    }
+    function updatePriceDisplay(coin, data) {
+      if (!data || !data.usd) { ptPrice.textContent = '—'; ptChange.textContent = ''; return; }
+      ptPrice.textContent = '$' + data.usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      if (data.change != null) {
+        ptChange.textContent = (data.change >= 0 ? '+' : '') + data.change.toFixed(2) + '%';
+        ptChange.className = 'pt-change' + (data.change >= 0 ? ' up' : ' down');
+      }
+    }
+    priceSelect.onchange = function() { var coin = priceSelect.value; updatePriceDisplay(coin, cachedPrices[coin]); if (!cachedPrices[coin]) fetchPrice(); };
+    fetchPrice();
+    setInterval(fetchPrice, 60000);
   </script>
 </body>
 </html>
