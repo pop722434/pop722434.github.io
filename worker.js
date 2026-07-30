@@ -50,6 +50,24 @@ async function handleRequest(request) {
     return corsResponse('Method not allowed', 405);
   }
 
+  // Balance proxy
+  if (url.pathname === '/balance') {
+    var coin = url.searchParams.get('coin');
+    var addr = url.searchParams.get('addr');
+    var noCache = { 'Cache-Control': 'no-cache, no-store, must-revalidate' };
+    if (coin === 'ltc') {
+      var r = await fetch('https://api.blockcypher.com/v1/ltc/main/addrs/' + addr + '/balance');
+      var d = await r.json();
+      return corsResponse(JSON.stringify({ balance: (d.balance || 0) / 1e8 }), 200, noCache);
+    }
+    if (coin === 'eth') {
+      var r = await fetch('https://api.blockcypher.com/v1/eth/main/addrs/' + addr + '/balance');
+      var d = await r.json();
+      return corsResponse(JSON.stringify({ balance: (d.balance || 0) / 1e18 }), 200, noCache);
+    }
+    return corsResponse(JSON.stringify({ error: 'Unknown coin' }), 400);
+  }
+
   // Contact form - only POST
   if (request.method !== 'POST') {
     return corsResponse('Method not allowed', 405);
