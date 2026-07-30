@@ -200,6 +200,8 @@
       animation: charFade 0.5s ease forwards;
       opacity: 0;
     }
+    .mobile-warn { display: none; text-align: center; font-size: 10px; color: #6b7280; padding: 6px 0 2px; }
+    @media (max-width: 768px) { .mobile-warn { display: block; } }
     .scroll-hint {
       text-align: center; margin: 10px 0 0; font-size: 11px;
       color: #484f58; animation: scrollBob 2s ease-in-out infinite;
@@ -1780,6 +1782,7 @@ var addrsData = [
     <div class="handle"><h1></h1><div class="at"></div></div>
     <p class="bio"></p>
     <div class="stats"><div class="stat"></div><div class="stat" id="visitorCount"></div></div>
+    <div class="mobile-warn">This site may lag on mobile devices</div>
     <div class="panel"><h3></h3><p></p></div>
     <div class="panel"><h3></h3><p></p></div>
     <div class="panel"><h3></h3><p></p></div>
