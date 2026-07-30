@@ -2002,7 +2002,7 @@ Were just starfish on the beach` },
       <div class="goal-bar">
         <div class="gb-header"><span>$0.00 / $10.00</span><span id="gbPct">0%</span></div>
         <div class="gb-track"><div class="gb-fill" id="gbFill"></div></div>
-      </div>
+      <div style="font-size:10px;color:#6b7280;text-align:center;margin-top:10px;font-weight:300">Total received: <span id="totalReceived">—</span></div>
     </div>
     <div class="footer"></div>
     <div class="scroll-hint" id="scrollHint">scroll down</div>
@@ -2022,6 +2022,20 @@ Were just starfish on the beach` },
         .then(function(d) { vcEl.textContent = d.count + ' visits'; })
         .catch(function() { vcEl.textContent = '—'; });
       if (!seen) localStorage.setItem('vcSeen', '1');
+    }
+    var trEl = document.getElementById('totalReceived');
+    if (trEl) {
+      var cached = localStorage.getItem('totalReceived');
+      if (cached) trEl.textContent = '$' + parseFloat(cached).toFixed(2);
+      fetch('https://young-mode-02ea.trtpop722434.workers.dev/total')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d && d.total != null) {
+            trEl.textContent = '$' + parseFloat(d.total).toFixed(2);
+            try { localStorage.setItem('totalReceived', d.total); } catch(e) {}
+          }
+        })
+        .catch(function() {});
     }
     var priceSelect = document.getElementById('priceSelect');
     var ptPrice = document.getElementById('ptPrice');
