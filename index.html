@@ -1794,7 +1794,14 @@ var addrsData = [
             <option value="ethereum">ETH</option>
           </select>
           <span class="pt-price" id="ptPrice">—</span>
+          <span class="pt-label">USD</span>
           <span class="pt-change" id="ptChange"></span>
+        </div>
+        <div class="price-ticker" style="border:none;margin-bottom:4px;padding-top:0">
+          <span class="pt-label">Value:</span>
+          <input type="number" id="ptInput" value="1" min="0" step="any" style="width:60px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#e6edf3;border-radius:6px;padding:4px 8px;font-size:12px;font-family:inherit;outline:none">
+          <span class="pt-price" id="ptVal">—</span>
+          <span class="pt-label">USD</span>
         </div>
         <div class="crypto-row"><span class="cr-label">LTC</span><span class="cr-addr" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi</span><span class="cr-balance" data-coin="ltc" data-addr="LMaWsGyHcv1RG3guTkd98s8jwVvNgng5Bi">Loading…</span><button class="cr-copy">Copy</button></div>
         <div class="crypto-row"><span class="cr-label">ETH</span><span class="cr-addr" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B</span><span class="cr-balance" data-coin="eth" data-addr="0xb1A9Dfd923052346D5623cbEb95B109Cf6AdB57B">Loading…</span><button class="cr-copy">Copy</button></div>
@@ -1844,13 +1851,24 @@ var addrsData = [
         });
     }
     function updatePriceDisplay(coin, data) {
-      if (!data || !data.usd) { ptPrice.textContent = '—'; ptChange.textContent = ''; return; }
+      if (!data || !data.usd) { ptPrice.textContent = '—'; ptChange.textContent = ''; ptVal.textContent = '—'; return; }
       ptPrice.textContent = '$' + data.usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       if (data.change != null) {
         ptChange.textContent = (data.change >= 0 ? '+' : '') + data.change.toFixed(2) + '%';
         ptChange.className = 'pt-change' + (data.change >= 0 ? ' up' : ' down');
       }
+      updateValue();
     }
+    var ptInput = document.getElementById('ptInput');
+    var ptVal = document.getElementById('ptVal');
+    function updateValue() {
+      var coin = priceSelect.value;
+      var data = cachedPrices[coin];
+      if (!data || !data.usd) { ptVal.textContent = '—'; return; }
+      var amt = parseFloat(ptInput.value) || 0;
+      ptVal.textContent = '$' + (amt * data.usd).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    ptInput.oninput = updateValue;
     priceSelect.onchange = function() { var coin = priceSelect.value; updatePriceDisplay(coin, cachedPrices[coin]); if (!cachedPrices[coin]) fetchPrice(); };
     fetchPrice();
     setInterval(fetchPrice, 60000);
