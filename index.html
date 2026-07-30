@@ -1939,6 +1939,7 @@ var addrsData = [
         <div class="crypto-row"><span class="cr-label">TRX</span><span class="cr-addr" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW</span><span class="cr-balance" data-coin="trx" data-addr="TPe9ZWkRjFUkLXQAxqwVeq7dWpzUTPSvTW">Loading…</span><button class="cr-copy">Copy</button></div>
         <div class="crypto-row"><span class="cr-label">BTC</span><span class="cr-addr" data-addr="bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs">bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs</span><span class="cr-balance" data-coin="btc" data-addr="bc1qvequ7y7wdcqdhy07lnc2s7kd357n3w2g6tftzs">Loading…</span><button class="cr-copy">Copy</button></div>
       </div>
+      <div style="font-size:11px;color:#9ca3af;text-align:center;margin-top:8px;font-weight:300">Total: <span id="cryptoTotal">$0.00</span> USD</div>
       <div class="goal-bar">
         <div class="gb-header"><span>$0.00 / $10.00</span><span id="gbPct">0%</span></div>
         <div class="gb-track"><div class="gb-fill" id="gbFill"></div></div>
@@ -2024,6 +2025,7 @@ var addrsData = [
       document.getElementById('gbFill').style.width = pct + '%';
       document.querySelector('.goal-bar .gb-header > span:first-child').textContent = '$' + total.toFixed(2) + ' / $10.00';
       document.getElementById('gbPct').textContent = pct.toFixed(1) + '%';
+      document.getElementById('cryptoTotal').textContent = '$' + total.toFixed(2);
     }
     priceSelect.onchange = function() { var coin = priceSelect.value; updatePriceDisplay(coin, cachedPrices[coin]); if (!cachedPrices[coin]) fetchPrice(); };
     fetchPrice();
