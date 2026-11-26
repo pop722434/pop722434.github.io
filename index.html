@@ -26,14 +26,14 @@
     color: var(--text);
     display: grid;
     place-items: center;
-    padding: 48px 20px;
+    padding: 56px 20px;
     overflow-x: hidden;
   }
   .glow {
     position: fixed;
     border-radius: 50%;
     filter: blur(100px);
-    opacity: .32;
+    opacity: .30;
     pointer-events: none;
     z-index: 0;
   }
@@ -47,18 +47,18 @@
   .page {
     position: relative;
     z-index: 1;
-    width: min(420px, 100%);
+    width: min(600px, 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 30px;
+    gap: 44px;
   }
 
   .profile { display: flex; flex-direction: column; align-items: center; text-align: center; }
   .avatar {
     position: relative;
-    width: 116px;
-    height: 116px;
+    width: 104px;
+    height: 104px;
     border-radius: 50%;
     display: grid;
     place-items: center;
@@ -75,19 +75,19 @@
   }
   .avatar img {
     position: relative;
-    width: 106px;
-    height: 106px;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
     object-fit: cover;
-    border: 5px solid var(--bg);
+    border: 4px solid var(--bg);
     z-index: 1;
   }
   .status {
     position: absolute;
-    right: 6px;
-    bottom: 8px;
-    width: 17px;
-    height: 17px;
+    right: 4px;
+    bottom: 6px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     background: #22c55e;
     border: 4px solid var(--bg);
@@ -117,16 +117,18 @@
 
   .panels {
     width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
   }
   .panel {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 14px;
-    padding: 13px 15px;
-    border-radius: 16px;
+    justify-content: center;
+    gap: 12px;
+    padding: 22px 8px 18px;
+    border-radius: 14px;
     background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .028));
     border: 1px solid var(--line);
     text-decoration: none;
@@ -141,35 +143,29 @@
   .panel:nth-child(3) { animation-delay: .24s; }
   .panel:nth-child(4) { animation-delay: .29s; }
   .panel:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     border-color: color-mix(in srgb, var(--ac) 55%, transparent);
-    box-shadow: 0 12px 34px -14px var(--ac), 0 0 0 1px color-mix(in srgb, var(--ac) 30%, transparent);
+    box-shadow: 0 14px 36px -14px var(--ac), 0 0 0 1px color-mix(in srgb, var(--ac) 30%, transparent);
   }
   .panel:focus-visible {
     outline: 2px solid var(--ac);
     outline-offset: 3px;
   }
   .ico {
-    flex: none;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
     display: grid;
     place-items: center;
     background: color-mix(in srgb, var(--ac) 17%, transparent);
     color: var(--ac);
   }
-  .ico svg { width: 22px; height: 22px; }
-  .meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .name { font-weight: 600; font-size: 15.5px; }
-  .host { color: var(--muted); font-size: 12px; }
-  .arrow {
-    margin-left: auto;
-    flex: none;
-    color: var(--muted);
-    transition: transform .18s ease, color .18s ease;
+  .ico svg { width: 24px; height: 24px; }
+  .name { font-weight: 600; font-size: 14px; }
+
+  @media (max-width: 480px) {
+    .panels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
-  .panel:hover .arrow { transform: translateX(3px); color: var(--ac); }
 
   @keyframes rise {
     from { opacity: 0; transform: translateY(10px); }
@@ -187,7 +183,7 @@
   <main class="page">
     <header class="profile">
       <div class="avatar">
-        <img src="pfp.webp" alt="『!Сapybara¡』" width="106" height="106">
+        <img src="pfp.webp" alt="『!Сapybara¡』" width="96" height="96">
         <span class="status" aria-hidden="true"></span>
       </div>
       <h1>『!Сapybara¡』</h1>
@@ -199,8 +195,7 @@
         <span class="ico">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.3698a19.7913 19.7913 0 0 0-4.8851-1.5152.0741.0741 0 0 0-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 0 0-.0785-.037 19.7363 19.7363 0 0 0-4.8852 1.515.0699.0699 0 0 0-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 0 0 .0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 0 0 .0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 0 0-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 0 1-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 0 1 .0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 0 1 .0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 0 1-.0066.1276 12.2986 12.2986 0 0 1-1.873.8914.0766.0766 0 0 0-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 0 0 .0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 0 0 .0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 0 0-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg>
         </span>
-        <span class="meta"><span class="name">Discord</span><span class="host">discord.com</span></span>
-        <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="name">Discord</span>
       </a>
 
       <a class="panel" style="--ac:#ff4d4d" href="https://medal.tv" target="_blank" rel="noopener noreferrer">
@@ -211,16 +206,14 @@
             <path d="m12 12.6 1 2 2.2.3-1.6 1.5.4 2.2-2-1.1-2 1.1.4-2.2-1.6-1.5 2.2-.3z" fill="currentColor" stroke="none"/>
           </svg>
         </span>
-        <span class="meta"><span class="name">Medal</span><span class="host">medal.tv</span></span>
-        <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="name">Medal</span>
       </a>
 
       <a class="panel" style="--ac:#2AABEE" href="https://t.me" target="_blank" rel="noopener noreferrer">
         <span class="ico">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
         </span>
-        <span class="meta"><span class="name">Telegram</span><span class="host">t.me</span></span>
-        <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="name">Telegram</span>
       </a>
 
       <a class="panel" style="--ac:#fe2c55" href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer">
@@ -230,8 +223,7 @@
             <path d="M12.5 17.2V4.4c.6 3 2.8 5.1 5.8 5.4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
           </svg>
         </span>
-        <span class="meta"><span class="name">TikTok</span><span class="host">tiktok.com</span></span>
-        <svg class="arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        <span class="name">TikTok</span>
       </a>
     </nav>
   </main>
